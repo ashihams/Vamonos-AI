@@ -25,7 +25,7 @@ test:
 	uv run pytest -q
 
 coverage-thresholds:
-	uv run coverage report --include="*/costwise/domain/*" --fail-under=90
+	uv run coverage report --include="*/costwise/domain/*" --fail-under=95
 	uv run coverage report --include="*/costwise/services/*" --fail-under=90
 
 check: fmt lint types layers file-length todos test coverage-thresholds
