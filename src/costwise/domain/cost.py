@@ -61,13 +61,19 @@ def model_cost(calls: Sequence[CallRecord], prices: PriceBook) -> Decimal:
     """Return token cost for the calls using the price book."""
     total = Decimal(0)
     for call in calls:
-        try:
-            price = prices.models[call.model]
-        except KeyError as exc:
-            raise ConfigError(f"unknown model price: {call.model}") from exc
-        total += _token_cost(call.input_tokens, price.input_per_1m_usd)
-        total += _token_cost(call.output_tokens, price.output_per_1m_usd)
+        total += usage_cost(call.model, call.input_tokens, call.output_tokens, prices)
     return total
+
+
+def usage_cost(model: str, input_tokens: int, output_tokens: int, prices: PriceBook) -> Decimal:
+    """Return the token cost of one call to the named model."""
+    try:
+        price = prices.models[model]
+    except KeyError as exc:
+        raise ConfigError(f"unknown model price: {model}") from exc
+    return _token_cost(input_tokens, price.input_per_1m_usd) + _token_cost(
+        output_tokens, price.output_per_1m_usd
+    )
 
 
 def infra_cost(billed_ms: int, memory_mb: int, prices: PriceBook) -> Decimal:
