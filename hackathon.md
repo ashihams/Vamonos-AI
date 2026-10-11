@@ -77,7 +77,21 @@ Completed and committed on its own branch, `feat/llm-client`, stacked on PR #4. 
 
 Open: confirm on the first live call that the proxy honors `max_tokens` and returns `usage`. Pick the cheap and strong models from the seven on the shared key and set their prices; `config/pricing.yaml` still has placeholders and zero prices.
 
-Planned and not started: the task pipeline, the local runner, neatlogs telemetry, the optimizer, the iteration loop, the business plan, and the demo. Lambda remains a stretch stage.
+### 2026-10-12 — Stage 5 qualification pipeline (mocked models only)
+
+Completed and committed on its own branch, `feat/task-pipeline`, stacked on the Stage 4 branch. No model has been called; tests use a scripted fake model.
+
+- `PayloadService` sends the full stored Crustdata payload when no fields are configured, otherwise only the listed normalized fields. It also gives a rough token estimate (characters / 4) for logs only.
+- `RoutingService` picks the strong model when the policy's missing-field count or near-threshold rule applies, otherwise the policy default.
+- `PromptService` states the ICP thresholds, where to find each value in both raw and normalized data, and demands JSON with exactly `icp_fit`, `reasons`, `headcount_band`, `stage`. Prompt version `qualify-v1` is logged on every build.
+- `ParsingService` accepts bare JSON or one code fence and rejects wrong types, missing or extra keys, and surrounding prose.
+- `TaskService` fetches the company, routes, trims, prompts, calls the model, and parses. On a parse failure it retries once on the strong model and records both calls. Data, model, budget, and parse failures come back as an error on the result instead of an exception.
+
+`make check` exited 0. pytest: 200 passed. Overall coverage 99.92%; domain and services at 100%.
+
+Measured for later cost planning: the 39 stored payloads average about 160 KB of JSON each (smallest 36 KB, largest 325 KB). The starting config sends the full payload, so each baseline call will carry tens of thousands of input tokens.
+
+Planned and not started: the local runner, neatlogs telemetry, the optimizer, the iteration loop, the business plan, and the demo. Lambda remains a stretch stage.
 
 ## Demo
 

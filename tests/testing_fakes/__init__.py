@@ -2,7 +2,7 @@
 
 from tests.testing_fakes.fake_approval import ScriptedApprover
 from tests.testing_fakes.fake_budget import RecordingBudget
-from tests.testing_fakes.fake_clock import FixedClock, TickingClock
+from tests.testing_fakes.fake_clock import FixedClock, SteppingClock, TickingClock
 from tests.testing_fakes.fake_data import FakeCompanySource
 from tests.testing_fakes.fake_fixtures import InMemoryFixtureStore
 from tests.testing_fakes.fake_llm import FakeLLMClient
@@ -21,5 +21,6 @@ __all__ = [
     "RecordingBudget",
     "RecordingTelemetrySink",
     "ScriptedApprover",
+    "SteppingClock",
     "TickingClock",
 ]
