@@ -14,6 +14,14 @@ class RunnerCapabilities(FrozenModel):
     infra_source: InfraCostSource
 
 
+class QualificationTask(Protocol):
+    """The qualification app a runner executes."""
+
+    def run(self, request: QualificationRequest, config: OptimizerConfig) -> InvocationResult:
+        """Qualify one company and return the invocation without runner fields."""
+        ...
+
+
 class TaskRunner(Protocol):
     """Runs one qualification and can apply infrastructure settings."""
 
