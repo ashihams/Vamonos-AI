@@ -1,0 +1,197 @@
+{
+  "abacus.ai": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "airbyte.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "articulate.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "atlan.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "atlassian.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "browserbase.com": {
+    "expected_fit": true,
+    "difficulty": "easy",
+    "split": "eval"
+  },
+  "cal.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "clerk.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "dagster.io": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "e2b.dev": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "heldout"
+  },
+  "hackerearth.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "hubspot.com": {
+    "expected_fit": false,
+    "difficulty": "easy",
+    "split": "eval"
+  },
+  "interface.ai": {
+    "expected_fit": true,
+    "difficulty": "easy",
+    "split": "eval"
+  },
+  "joveo.com": {
+    "expected_fit": true,
+    "difficulty": "easy",
+    "split": "eval"
+  },
+  "langchain.com": {
+    "expected_fit": true,
+    "difficulty": "easy",
+    "split": "eval"
+  },
+  "linear.app": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "heldout"
+  },
+  "lucidya.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "heldout"
+  },
+  "modal.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "n8n.io": {
+    "expected_fit": false,
+    "difficulty": "easy",
+    "split": "eval"
+  },
+  "nelogica.com.br": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "neon.tech": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "heldout"
+  },
+  "opkey.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "heldout"
+  },
+  "paystack.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "pixis.ai": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "posthog.com": {
+    "expected_fit": false,
+    "difficulty": "easy",
+    "split": "eval"
+  },
+  "resend.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "retool.com": {
+    "expected_fit": true,
+    "difficulty": "easy",
+    "split": "heldout"
+  },
+  "sarvam.ai": {
+    "expected_fit": true,
+    "difficulty": "easy",
+    "split": "heldout"
+  },
+  "seclore.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "shield.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "sprinto.com": {
+    "expected_fit": true,
+    "difficulty": "easy",
+    "split": "eval"
+  },
+  "stripe.com": {
+    "expected_fit": false,
+    "difficulty": "easy",
+    "split": "eval"
+  },
+  "supabase.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "swipejobs.com": {
+    "expected_fit": true,
+    "difficulty": "easy",
+    "split": "eval"
+  },
+  "tealhq.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "temporal.io": {
+    "expected_fit": false,
+    "difficulty": "easy",
+    "split": "heldout"
+  },
+  "thriveglobal.com": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "wati.io": {
+    "expected_fit": false,
+    "difficulty": "hard",
+    "split": "eval"
+  },
+  "zapier.com": {
+    "expected_fit": false,
+    "difficulty": "easy",
+    "split": "eval"
+  }
+}
