@@ -1,0 +1,10 @@
+---
+description: Layering and structure rules for costwise
+alwaysApply: true
+---
+- Layers: domain <- ports <- (services | adapters) <- bootstrap <- apps. Dependencies point inward only.
+- domain and services never import I/O libraries (httpx, boto3, opentelemetry, yaml, typer).
+- Services receive collaborators through constructors typed as ports (Protocols). No globals.
+- apps/* and lambda handler stay thin: parse input, call one service, format output.
+- Each module has one responsibility and stays under 250 lines. Split rather than grow.
+- New external behavior goes behind a port in src/costwise/ports first, then an adapter.
