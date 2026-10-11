@@ -24,14 +24,21 @@ from costwise.adapters.storage.yaml_loaders import (
     load_workload_policy,
 )
 from costwise.adapters.system_clock import SystemClock
+from costwise.adapters.telemetry.exporters import (
+    collector_meter_provider,
+    neatlogs_tracer_provider,
+)
 from costwise.adapters.telemetry.null_sink import NullSink
+from costwise.adapters.telemetry.otel_sink import OtelSink
 from costwise.domain.config import OptimizerConfig
 from costwise.domain.errors import ConfigError
 from costwise.domain.icp import IcpRule
 from costwise.domain.labels import WorkloadPolicy
 from costwise.domain.task import QualificationRequest
+from costwise.ports.clock import Clock
 from costwise.ports.data import CompanyDataSource
 from costwise.ports.runner import RunnerCapabilities
+from costwise.ports.telemetry import TelemetrySink
 from costwise.services.baseline import BaselineService
 from costwise.services.budget import BudgetService
 from costwise.services.evaluation import EvaluationInputs, EvaluationService, EvaluationSinks
@@ -130,7 +137,7 @@ def build_eval_stack(
     )
     task = TaskService(FixtureCompanySource(store), guarded_client(base_llm, budget), steps, clock)
     runner = LocalRunner(task, clock)
-    telemetry = NullSink()
+    telemetry = build_telemetry(settings, clock)
     evaluation = EvaluationService(
         runner,
         EvaluationInputs(prices, labels),
@@ -147,6 +154,15 @@ def build_eval_stack(
         requests=requests,
         capabilities=runner.capabilities(),
     )
+
+
+def build_telemetry(settings: EvalSettings, clock: Clock) -> TelemetrySink:
+    """Export to neatlogs when its key is set, metrics to a Collector when one is configured."""
+    if settings.neatlogs_api_key is None:
+        return NullSink()
+    endpoint = settings.otel_collector_endpoint
+    meters = collector_meter_provider(endpoint) if endpoint else None
+    return OtelSink(neatlogs_tracer_provider(settings.neatlogs_api_key), meters, clock)
 
 
 def build_fixture_stack(fixtures_dir: Path, config_dir: Path) -> FixtureStack:

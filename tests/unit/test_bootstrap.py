@@ -4,13 +4,23 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
+from pydantic import SecretStr
 
 from costwise.adapters.data.crustdata_client import CrustdataClient
+from costwise.adapters.telemetry.null_sink import NullSink
+from costwise.adapters.telemetry.otel_sink import OtelSink
 from costwise.apps.cli.support import capability_lines, report_lines
-from costwise.bootstrap import build_fixture_stack, default_cli_deps, open_crustdata_source
+from costwise.bootstrap import (
+    build_fixture_stack,
+    build_telemetry,
+    default_cli_deps,
+    open_crustdata_source,
+)
 from costwise.domain.task import InfraCostSource
 from costwise.ports.runner import RunnerCapabilities
 from costwise.services.baseline import RunReport
+from costwise.settings import EvalSettings
+from tests.testing_fakes import FixedClock
 
 _REPO_CONFIG = Path(__file__).resolve().parents[2] / "config"
 
@@ -34,6 +44,22 @@ def test_crustdata_source_reads_the_key_from_env_file(
     )
     with open_crustdata_source() as source:
         assert isinstance(source, CrustdataClient)
+
+
+def test_telemetry_is_otel_with_a_neatlogs_key_and_null_without() -> None:
+    """The neatlogs key switches telemetry from the null sink to the OTel sink."""
+    base = EvalSettings(
+        litellm_base_url="https://llm.example.test/v1",
+        litellm_api_key=SecretStr("sk-test-only"),
+        model_budget_usd=Decimal(5),
+        neatlogs_api_key=None,
+        otel_collector_endpoint="",
+    )
+    assert isinstance(build_telemetry(base, FixedClock(1)), NullSink)
+    keyed = base.model_copy(update={"neatlogs_api_key": SecretStr("neat-test-only")})
+    sink = build_telemetry(keyed, FixedClock(1))
+    assert isinstance(sink, OtelSink)
+    sink.flush()
 
 
 def test_report_and_capability_lines_cover_early_stop_and_measured_infra() -> None:

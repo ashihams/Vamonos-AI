@@ -16,3 +16,4 @@ __pycache__/
 .pre-commit-cache/
 fixtures/samples/
 fixtures/raw/*.json
+infra/collector/data/

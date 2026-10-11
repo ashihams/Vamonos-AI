@@ -104,7 +104,22 @@ Completed and committed on its own branch, `feat/eval-baseline`, stacked on the 
 
 Local smoke runs, same day: `costwise fixtures label` reproduced the committed labels (39 labeled, 8 held out, 8 fits; file content unchanged). `costwise eval baseline --run-id smoke --tasks 1` without a key exited 2 with "missing or invalid settings: litellm_api_key, litellm_base_url, model_budget_usd".
 
-Planned and not started: neatlogs telemetry, the optimizer, the iteration loop, the business plan, and the demo. Lambda remains a stretch stage.
+### 2026-10-12 — Stage 7 neatlogs telemetry (code done, dashboard check pending)
+
+Completed in code and committed on its own branch, `feat/telemetry`, stacked on the Stage 6 branch, before the dashboard check (builder's choice). Nothing has been sent to neatlogs yet; the smoke check needs the builder's neatlogs key.
+
+- `OtelSink` builds spans on the driver from returned results, with explicit timestamps. Each task gets one root span with run, task, config version, category, split, success, cache hit, infra source, and the three cost components. Each model call gets a nested child span with `gen_ai.*` model and token attributes.
+- An optimizer iteration is one span with lever, decision, accepted, and reason, plus one child span per guardrail check with an OK or ERROR status.
+- Summary gauges (cost per task, success rate, p95 latency) are labeled by run and config version, never task id. They go only to a local Collector, when one is configured.
+- Export goes to neatlogs over OTLP/gRPC with TLS at `ingest.neatlogs.com:443` with the `x-api-key` header, through a dedicated tracer provider, only when `NEATLOGS_API_KEY` is set. Without the key, telemetry is a no-op.
+- All attribute names live in `attributes.py`, and a test fails if another module spells one out.
+- Collector config and Docker Compose file added; their output folder is gitignored. `scripts/smoke_neatlogs.py` sends one fake task trace (two model calls) and one iteration trace (one passed and one failed guardrail).
+
+`make check` exited 0. pytest: 237 passed. Overall coverage 99.77%; domain and services at 100%. Span tree, timestamps, attributes, statuses, and gauge labels are checked with the OpenTelemetry in-memory exporter and reader.
+
+Open: the dashboard check (token fields, filterable attributes, span nesting, guardrail rendering) and the unpinned Collector image.
+
+Planned and not started: the optimizer, the iteration loop, the business plan, and the demo. Lambda remains a stretch stage.
 
 ## Demo
 

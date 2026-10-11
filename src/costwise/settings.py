@@ -36,6 +36,17 @@ class CrustdataSettings(BaseSettings):
     crustdata_api_key: SecretStr
 
 
+class NeatlogsSettings(BaseSettings):
+    """The neatlogs key alone, for the telemetry smoke check.
+
+    Unrelated keys in a shared .env file are ignored.
+    """
+
+    model_config = SettingsConfigDict(env_file=None, extra="ignore", frozen=True)
+
+    neatlogs_api_key: SecretStr
+
+
 class EvalSettings(BaseSettings):
     """Model endpoint, key, budget, and paths for local evaluation runs.
 
@@ -47,6 +58,8 @@ class EvalSettings(BaseSettings):
     litellm_base_url: str
     litellm_api_key: SecretStr
     model_budget_usd: Money
+    neatlogs_api_key: SecretStr | None = None
+    otel_collector_endpoint: str = ""
     config_dir: Path = Path("config")
     runs_dir: Path = Path("runs")
     fixtures_dir: Path = Path("fixtures")
