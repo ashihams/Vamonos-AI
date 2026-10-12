@@ -279,7 +279,15 @@ Builder's choice after `demo-2`: fix both gaps it exposed. No paid calls were ma
 
 - Deployed on the builder's instruction to Vercel production: [dashboard-ten-beryl-63.vercel.app](https://dashboard-ten-beryl-63.vercel.app). The page and `/data/dashboard.json` both returned HTTP 200 without a login.
 
-Planned and not started: the dashboard check of the rebuilt traces, the Lambda deploy, and the demo video.
+### 2026-10-12 — Lambda runner deployed and smoke-tested
+
+- On the builder's instruction, `infra/aws/deploy.py deploy` ran against the builder's own AWS account in ap-south-1, not the hackathon's us-east-1 credits. It created one IAM role with the basic execution policy and the function `costwise-qualify` (python3.12, 1024 MB), both tagged `project=costwise`. Only the LiteLLM URL and key went into the function's environment.
+- Smoke run `lambda-smoke`, 3 tasks on Lambda: 3 of 3 successful. Model cost 0.351249 USD. Infrastructure 0.000225 USD, now measured from each invocation's `REPORT` line instead of modeled.
+- The three invocations billed 4236, 4568 and 4666 ms at 1024 MB, and all three were cold starts, because the evaluator runs up to 4 tasks at once.
+- This closes the `REPORT`-line `TODO(VERIFY)`. The Lambda per-GB-second and per-request prices are still build spec values, unchecked for ap-south-1.
+- Torn down right after, on the builder's instruction: the function, the policy attachment, and the role were deleted, and a follow-up listing found no `costwise` function or role left.
+
+Planned and not started: the dashboard check of the rebuilt traces and the demo video.
 
 ## Demo
 

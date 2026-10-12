@@ -5,7 +5,6 @@ import re
 from costwise.domain.errors import RunnerError
 from costwise.domain.frozen import FrozenModel
 
-# TODO(VERIFY: the Tail log of a text-format python3.12 function ends with this REPORT line)
 _REPORT = re.compile(
     r"REPORT RequestId: \S+\s+"
     r"Duration: (?P<duration>\d+(?:\.\d+)?) ms\s+"
