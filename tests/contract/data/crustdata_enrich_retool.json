@@ -1,0 +1,74 @@
+[
+  {
+    "matched_on": "retool.com",
+    "match_type": "domain",
+    "matches": [
+      {
+        "confidence_score": 1.0,
+        "company_data": {
+          "crustdata_company_id": 633593,
+          "basic_info": {
+            "name": "Retool",
+            "primary_domain": "retool.com",
+            "employee_count_range": "201-500",
+            "company_type": "Privately Held",
+            "status": "active",
+            "year_founded": 2017
+          },
+          "headcount": {
+            "total": 416,
+            "growth_percent": {
+              "mom": 0.24096385542168677,
+              "qoq": 1.7114914425427872,
+              "six_months": -3.480278422273782,
+              "yoy": -11.11111111111111,
+              "two_years": 6.666666666666667
+            },
+            "by_role_absolute": {
+              "Consulting": 7,
+              "Engineering": 118,
+              "Media and Communication": 7,
+              "Accounting": 8,
+              "Operations": 18,
+              "Administrative": 7,
+              "Arts and Design": 15,
+              "Marketing": 29,
+              "Product Management": 12,
+              "Information Technology": 44,
+              "Business Development": 20,
+              "Human Resources": 18,
+              "Sales": 52
+            }
+          },
+          "funding": {
+            "total_investment_usd": 141000000.0,
+            "last_round_amount_usd": 45000000.0,
+            "last_fundraise_date": "2022-07-27",
+            "last_round_type": "series_c"
+          },
+          "hiring": {
+            "openings_count": 3,
+            "openings_growth_percent": {
+              "mom": -0.625,
+              "qoq": -0.7857142857142857,
+              "yoy": -0.875
+            }
+          },
+          "taxonomy": {
+            "professional_network_industry": "Software Development",
+            "categories": [
+              "Artificial Intelligence (AI)",
+              "Developer Tools",
+              "Enterprise Software",
+              "Productivity Tools",
+              "Software",
+              "Software Engineering",
+              "Computer Hardware Development",
+              "Information Technology"
+            ]
+          }
+        }
+      }
+    ]
+  }
+]

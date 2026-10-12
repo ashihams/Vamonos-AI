@@ -1,0 +1,6 @@
+models:
+  "<cheap-model-name>": { input_per_1m_usd: "0.00", output_per_1m_usd: "0.00" }
+  "<strong-model-name>": { input_per_1m_usd: "0.00", output_per_1m_usd: "0.00" }
+lambda_usd_per_gb_second: "0.0000166667"
+lambda_usd_per_request: "0.0000002"
+crustdata_usd_per_credit: "0.00"

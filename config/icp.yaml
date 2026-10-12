@@ -1,0 +1,5 @@
+min_employees: 50
+max_employees: 1000
+allowed_stages: [seed, series_a, series_b, series_c]
+min_engineering_open_roles: 0
+near_threshold_pct: 10.0

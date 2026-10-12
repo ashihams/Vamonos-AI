@@ -1,0 +1,43 @@
+# Fixture companies: a mix of likely ICP fits, clear misses (large or late-stage),
+# and small or young companies where data may be missing or near a threshold.
+retool.com
+posthog.com
+supabase.com
+linear.app
+airbyte.com
+dagster.io
+temporal.io
+clerk.com
+resend.com
+cal.com
+n8n.io
+langchain.com
+modal.com
+neon.tech
+browserbase.com
+e2b.dev
+stripe.com
+atlassian.com
+hubspot.com
+zapier.com
+# Added 2026-10-12 from Crustdata company search: Series A-C, 150-800 employees,
+# Software Development, sorted by followers. marketo.com was skipped (acquired).
+hackerearth.com
+sprinto.com
+nelogica.com.br
+joveo.com
+thriveglobal.com
+lucidya.com
+wati.io
+abacus.ai
+pixis.ai
+opkey.com
+tealhq.com
+shield.com
+interface.ai
+atlan.com
+seclore.com
+paystack.com
+articulate.com
+sarvam.ai
+swipejobs.com
