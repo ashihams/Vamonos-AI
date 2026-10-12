@@ -1,0 +1,7 @@
+---
+description: Work one stage at a time
+alwaysApply: true
+---
+- Read docs/SPEC.md. Implement only the stage the user names.
+- At the end, output a stage report: files, tests, coverage, open VERIFY items, doubts.
+- If a stage says STOP AND ASK, stop and ask the human before continuing.

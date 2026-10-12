@@ -1,0 +1,1 @@
+"""Company data adapters."""

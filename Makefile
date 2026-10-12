@@ -1,0 +1,34 @@
+.PHONY: install fmt lint types layers file-length todos test coverage-thresholds check clean
+
+install:
+	uv sync --all-extras --all-groups
+
+fmt:
+	uv run ruff format --check .
+
+lint:
+	uv run ruff check .
+
+types:
+	uv run mypy --strict src scripts
+
+layers:
+	uv run lint-imports
+
+file-length:
+	uv run python scripts/check_file_length.py
+
+todos:
+	uv run python scripts/check_todos.py
+
+test:
+	uv run pytest -q
+
+coverage-thresholds:
+	uv run coverage report --include="*/costwise/domain/*" --fail-under=90
+	uv run coverage report --include="*/costwise/services/*" --fail-under=90
+
+check: fmt lint types layers file-length todos test coverage-thresholds
+
+clean:
+	uv run python scripts/clean_workspace.py

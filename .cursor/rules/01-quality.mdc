@@ -1,0 +1,11 @@
+---
+description: Code quality gates for costwise
+alwaysApply: true
+---
+- Run `make check` before declaring any task done. Never lower a threshold to make it pass.
+- Python 3.12, full type hints, mypy strict, no Any in domain/ports/services.
+- Money is Decimal. Models are frozen pydantic models with extra="forbid".
+- Inject Clock and random seeds. No print(). No bare except. No mutable default args.
+- Max function length 40 statements, complexity 8, 5 parameters.
+- Unit tests use fakes from tests/testing_fakes. No network, no sleeps.
+- Do not invent API details. Use TODO(VERIFY: ...) and record it in docs/open-verifications.md.
