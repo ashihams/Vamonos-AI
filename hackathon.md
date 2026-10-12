@@ -287,6 +287,18 @@ Builder's choice after `demo-2`: fix both gaps it exposed. No paid calls were ma
 - This closes the `REPORT`-line `TODO(VERIFY)`. The Lambda per-GB-second and per-request prices are still build spec values, unchecked for ap-south-1.
 - Torn down right after, on the builder's instruction: the function, the policy attachment, and the role were deleted, and a follow-up listing found no `costwise` function or role left.
 
+### 2026-10-12 — dashboard: approval replay and quality metrics
+
+- New "Be the approver" section. It steps through the recorded proposals of the selected run, with `apply this change? [y/n]` as in the terminal.
+  - **Approve:** shows the recorded full-workload re-run, each guardrail check, and the verdict.
+  - **Reject:** does what `costwise optimize` does: no run, current config kept. Two rejections in a row end the loop.
+  - It is labeled as a replay; no model is called on the site.
+  - If the visitor's choices leave a different config than the recording had, the page says later proposals are still the recorded ones.
+- New "Quality beyond success rate" section. Per version: real fits caught, non-fits answered correctly, balanced accuracy, and the score of always answering "not a fit". These are recovered from recorded answers, because a task succeeds exactly when the model's answer equals the label.
+  - In `demo-2`, the rolled-back routing change caught 4 of 4 fits but only 15 of 23 non-fits: 67.9%, below the 85.2% that always answering "not a fit" scores.
+  - v1 and v3 caught 4 of 4 fits and 23 of 23 non-fits; the one failure had no parsed answer.
+- README limitations updated: the Lambda smoke run, the guardrail's sensitivity on 5 held-out and 23 evaluation tasks, and the replay's limits.
+
 Planned and not started: the dashboard check of the rebuilt traces and the demo video.
 
 ## Demo

@@ -30,7 +30,7 @@ export function Stack() {
   return (
     <Section
       id="stack"
-      label="05 · Stack"
+      label="07 · Stack"
       title="Observed, versioned, and costed"
       description="Every task and every optimizer decision is traced in neatlogs. The build itself is checkpointed in Entire, and the economics are modeled in cfo.ai from the measured run."
     >

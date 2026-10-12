@@ -37,7 +37,7 @@ export function Method() {
   return (
     <Section
       id="method"
-      label="06 · Method"
+      label="08 · Method"
       title="What is measured, and what is not"
       description="Small workload, real calls. Differences of a few points are within noise; one held-out miss is a 20-point drop."
     >

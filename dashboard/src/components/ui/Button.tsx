@@ -21,17 +21,16 @@ interface ButtonProps {
   className?: string;
 }
 
-/** Link styled as a button; every action on this site navigates. */
+const BASE =
+  "relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-lg px-4 py-2.5 text-sm font-medium transition-[background-color,box-shadow,color,transform] duration-200 ease-expo active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40";
+
+/** Link styled as a button. */
 export function Button({ children, href, variant = "primary", icon: Icon, external, className }: ButtonProps) {
   return (
     <a
       href={href}
       {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
-      className={cn(
-        "relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-lg px-4 py-2.5 text-sm font-medium transition-[background-color,box-shadow,color,transform] duration-200 ease-expo active:scale-[0.98]",
-        VARIANTS[variant],
-        className,
-      )}
+      className={cn(BASE, VARIANTS[variant], className)}
     >
       <span className="relative inline-flex items-center gap-2">
         {children}
@@ -39,5 +38,26 @@ export function Button({ children, href, variant = "primary", icon: Icon, extern
       </span>
       {external && <span className="sr-only"> (opens in a new tab)</span>}
     </a>
+  );
+}
+
+interface ActionButtonProps {
+  children: ReactNode;
+  onClick: () => void;
+  variant?: Variant;
+  icon?: LucideIcon;
+  disabled?: boolean;
+  className?: string;
+}
+
+/** A real button for in-page actions, styled like Button. */
+export function ActionButton({ children, onClick, variant = "primary", icon: Icon, disabled, className }: ActionButtonProps) {
+  return (
+    <button type="button" onClick={onClick} disabled={disabled} className={cn(BASE, VARIANTS[variant], className)}>
+      <span className="relative inline-flex items-center gap-2">
+        {Icon && <Icon aria-hidden className="size-4" />}
+        {children}
+      </span>
+    </button>
   );
 }

@@ -4,7 +4,7 @@ import { Badge, type Tone } from "../components/ui/Badge";
 import { Card } from "../components/ui/Card";
 import { Section } from "../components/ui/Section";
 import { type Outcome, outcomeOf } from "../lib/derive";
-import { changePct, humanize, num, signedPct, usd } from "../lib/format";
+import { changePct, humanize, num, prettyDetail, signedPct, usd } from "../lib/format";
 import { fadeUp } from "../lib/motion";
 import type { DashboardRun, IterationRecord, VersionStats } from "../lib/types";
 
@@ -22,6 +22,11 @@ export function Iterations({ run }: { run: DashboardRun }) {
     <Section
       id="iterations"
       label="02 · Optimizer iterations"
+      aside={
+        <a href="#replay" className="text-sm font-medium text-[#b4bbf5] underline-offset-4 hover:underline">
+          Be the approver →
+        </a>
+      }
       title="Propose one change. Measure it. Keep it only if it holds."
       description="Each iteration changes exactly one lever. The change is approved (by a person at the terminal, or automatically with --auto-approve), the full workload re-runs, and the guardrails decide whether it is kept."
     >
@@ -139,8 +144,4 @@ function Figure({ label, value, hint, tone }: { label: string; value: string; hi
       <p className="mt-1 text-xs text-fg-muted">{hint}</p>
     </div>
   );
-}
-
-function prettyDetail(detail: string): string {
-  return detail.replace(/(\d+\.\d{4})\d+/g, "$1");
 }
