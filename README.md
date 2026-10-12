@@ -24,6 +24,19 @@ uv run costwise optimize --run-id baseline-1 --iterations 3   # asks y/n per pro
 
 `optimize` reuses the stored version-1 baseline for the run id, or runs it first. Each iteration proposes one lever change, asks for approval (`--auto-approve` skips the question), re-runs the full workload, and keeps the change only if every guardrail passes against the current accepted config. It stops at the iteration limit, when nothing is left to propose, after two rejections in a row, or at the budget stop line.
 
+## AWS Lambda runner (optional)
+
+With the Lambda runner, each task is one invocation of a deployed function, and infrastructure cost is measured from the `REPORT` log line (billed duration and memory) instead of modeled. It also enables the Lambda memory lever.
+
+```
+make lambda-build      # build build/costwise-lambda.zip; no AWS calls
+make lambda-deploy     # create or update the role and function (needs AWS credentials)
+uv run costwise eval baseline --run-id lambda-smoke --runner lambda --tasks 3
+make lambda-teardown   # delete the function and role after the demo
+```
+
+Defaults are region `us-east-1` and function `costwise-qualify`; set `AWS_REGION` and `LAMBDA_FUNCTION_NAME` to change them. The deploy creates only an IAM role with the basic execution policy and one function, both tagged `project=costwise`. It copies `LITELLM_BASE_URL` and `LITELLM_API_KEY` from `.env` into the function's environment and bundles the company fixtures, so no Crustdata or neatlogs key goes to AWS. The model budget is enforced on the machine running the CLI, which charges every model call the function reports.
+
 ## Telemetry
 
 - With `NEATLOGS_API_KEY` set, task and iteration spans are exported to neatlogs over OTLP/gRPC with TLS at `ingest.neatlogs.com:443`, using the `x-api-key` header.

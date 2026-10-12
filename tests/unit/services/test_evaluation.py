@@ -7,7 +7,7 @@ from decimal import Decimal
 import pytest
 
 from costwise.domain.config import OptimizerConfig
-from costwise.domain.errors import ConfigError
+from costwise.domain.errors import ConfigError, RunnerError
 from costwise.domain.task import InfraCostSource, InvocationResult, QualificationRequest
 from costwise.services.evaluation import with_cache_hits
 from tests.testing_fakes import FakeRunner
@@ -108,6 +108,28 @@ def test_budget_stop_returns_partial_results_and_logs_a_warning(
     assert "budget stop after 3 of 5 tasks" in caplog.text
     assert len(harness.telemetry.tasks) == 3
     assert len(harness.store.load_results("run-1", 1)) == 3
+
+
+def test_runner_failure_becomes_an_errored_task(caplog: pytest.LogCaptureFixture) -> None:
+    """One failed invocation is scored as an error with no cost; the run continues."""
+    labels = make_labels(2)
+
+    def respond(request: QualificationRequest, config: OptimizerConfig) -> InvocationResult:
+        """Fail the first task only."""
+        del config
+        if request.task_id == "task-0001":
+            raise RunnerError("lambda function error: Unhandled")
+        return make_invocation(request, labels[request.domain].expected_fit)
+
+    harness = make_evaluation(FakeRunner(LOCAL_LEVERS, InfraCostSource.MODELED, respond), labels)
+    with caplog.at_level(logging.WARNING):
+        failed, passed = harness.service.evaluate("run-1", make_config(), make_requests(0, 1))
+
+    assert failed.invocation.error == "RunnerError: lambda function error: Unhandled"
+    assert not failed.success
+    assert failed.costs.total_usd == Decimal(0)
+    assert passed.success
+    assert "runner failed for task-0001" in caplog.text
 
 
 def test_unlabeled_domains_and_bad_worker_counts_are_config_errors() -> None:

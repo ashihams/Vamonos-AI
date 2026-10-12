@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 
+import boto3
 import httpx
 
 from costwise.adapters.approval.auto_approver import AutoApprover
@@ -15,6 +16,7 @@ from costwise.adapters.data.fixture_source import FixtureCompanySource
 from costwise.adapters.data.fixture_store import JsonFixtureStore
 from costwise.adapters.llm.decorators import guarded_client
 from costwise.adapters.llm.openai_compatible import OpenAICompatibleClient
+from costwise.adapters.runners.lambda_runner import LambdaRunner
 from costwise.adapters.runners.local_runner import LocalRunner
 from costwise.adapters.storage.file_config_store import FileConfigStore
 from costwise.adapters.storage.jsonl_run_store import JsonlRunStore
@@ -33,14 +35,14 @@ from costwise.adapters.telemetry.exporters import (
 from costwise.adapters.telemetry.null_sink import NullSink
 from costwise.adapters.telemetry.otel_sink import OtelSink
 from costwise.domain.config import OptimizerConfig
-from costwise.domain.errors import ConfigError
 from costwise.domain.icp import IcpRule
 from costwise.domain.labels import WorkloadPolicy
 from costwise.domain.task import QualificationRequest
 from costwise.ports.approval import Approver
 from costwise.ports.clock import Clock
 from costwise.ports.data import CompanyDataSource
-from costwise.ports.runner import RunnerCapabilities
+from costwise.ports.llm import LLMClient
+from costwise.ports.runner import RunnerCapabilities, TaskRunner
 from costwise.ports.telemetry import TelemetrySink
 from costwise.services.baseline import BaselineService
 from costwise.services.budget import BudgetService
@@ -124,9 +126,10 @@ def open_eval_stack(runner_kind: RunnerKind) -> Iterator[EvalStack]:
 def build_eval_stack(
     settings: EvalSettings, runner_kind: RunnerKind, http: httpx.Client
 ) -> EvalStack:
-    """Wire the local evaluation stack from config files, fixtures, and the model endpoint."""
-    if runner_kind is not RunnerKind.LOCAL:
-        raise ConfigError("only the local runner is available until the Lambda stage")
+    """Wire evaluation from config files, fixtures, the model endpoint, and the chosen runner.
+
+    The driver's model client still serves the optimizer when tasks run on Lambda.
+    """
     config_dir = settings.config_dir
     prices = load_price_book(config_dir / "pricing.yaml")
     guardrails = load_guardrail_policy(config_dir / "policy.yaml")
@@ -138,16 +141,12 @@ def build_eval_stack(
     base_llm = OpenAICompatibleClient(
         http, settings.litellm_base_url, settings.litellm_api_key, clock
     )
-    steps = TaskSteps(
-        RoutingService(),
-        PayloadService(),
-        PromptService(),
-        ParsingService(),
-        load_icp_rule(config_dir / "icp.yaml"),
-    )
     llm = guarded_client(base_llm, budget)
-    task = TaskService(FixtureCompanySource(store), llm, steps, clock)
-    runner = LocalRunner(task, clock)
+    runner: TaskRunner
+    if runner_kind is RunnerKind.LAMBDA:
+        runner = build_lambda_runner(settings, budget)
+    else:
+        runner = _local_runner(store, llm, config_dir, clock)
     telemetry = build_telemetry(settings, clock)
     runs = JsonlRunStore(settings.runs_dir)
     configs = FileConfigStore(settings.runs_dir)
@@ -173,6 +172,26 @@ def build_eval_stack(
         capabilities=runner.capabilities(),
         iteration_with=iteration_with,
     )
+
+
+def _local_runner(
+    store: JsonFixtureStore, llm: LLMClient, config_dir: Path, clock: Clock
+) -> LocalRunner:
+    """Run the qualification task in this process over local fixtures."""
+    steps = TaskSteps(
+        RoutingService(),
+        PayloadService(),
+        PromptService(),
+        ParsingService(),
+        load_icp_rule(config_dir / "icp.yaml"),
+    )
+    return LocalRunner(TaskService(FixtureCompanySource(store), llm, steps, clock), clock)
+
+
+def build_lambda_runner(settings: EvalSettings, budget: BudgetService) -> LambdaRunner:
+    """Invoke the deployed function with the default AWS credential chain."""
+    client = boto3.client("lambda", region_name=settings.aws_region)
+    return LambdaRunner(client, settings.lambda_function_name, budget)
 
 
 def build_approver(auto_approve: bool) -> Approver:

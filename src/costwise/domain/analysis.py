@@ -41,11 +41,12 @@ class RunSummary(FrozenModel):
     hard_routed_cheap_failed: int
 
 
-def summarize(results: Sequence[TaskResult]) -> RunSummary:
+def summarize(results: Sequence[TaskResult], exclude_cold_start: bool = True) -> RunSummary:
     """Aggregate task results. Raise if none of them succeeded.
 
     Token averages are the mean, over tasks, of the sum of tokens across that
-    task's calls. Latency percentiles use the nearest-rank method.
+    task's calls. Latency percentiles use the nearest-rank method and, when
+    ``exclude_cold_start`` is set, skip cold starts unless every task was one.
     ``success_rate``, ``cache_hit_rate``, and ``repeat_rate`` are fractions from 0 to 1.
     ``repeat_rate`` is the share of tasks whose domain appeared earlier in ``results``,
     which is the hit rate a company-data cache could reach.
@@ -55,7 +56,7 @@ def summarize(results: Sequence[TaskResult]) -> RunSummary:
         raise CostwiseError("no successful tasks")
     totals = _totals(results)
     count = len(results)
-    latencies = [result.invocation.total_latency_ms for result in results]
+    latencies = _latencies(results, exclude_cold_start)
     easy_strong, hard_cheap_failed = _routed_counts(results)
     hits = sum(1 for result in results if result.request.data_cache_hit)
     return RunSummary(
@@ -74,6 +75,13 @@ def summarize(results: Sequence[TaskResult]) -> RunSummary:
         easy_routed_strong=easy_strong,
         hard_routed_cheap_failed=hard_cheap_failed,
     )
+
+
+def _latencies(results: Sequence[TaskResult], exclude_cold_start: bool) -> list[int]:
+    """Return task latencies, without cold starts when asked and any warm task exists."""
+    warm = [r for r in results if not (exclude_cold_start and r.invocation.cold_start)]
+    chosen = warm or results
+    return [result.invocation.total_latency_ms for result in chosen]
 
 
 def _totals(results: Sequence[TaskResult]) -> CostBreakdown:

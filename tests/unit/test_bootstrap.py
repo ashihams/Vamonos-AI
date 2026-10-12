@@ -19,7 +19,7 @@ from costwise.bootstrap import (
 from costwise.domain.task import InfraCostSource
 from costwise.ports.runner import RunnerCapabilities
 from costwise.services.baseline import RunReport
-from costwise.settings import EvalSettings
+from costwise.settings import AwsSettings, EvalSettings
 from tests.testing_fakes import FixedClock
 
 _REPO_CONFIG = Path(__file__).resolve().parents[2] / "config"
@@ -60,6 +60,20 @@ def test_telemetry_is_otel_with_a_neatlogs_key_and_null_without() -> None:
     sink = build_telemetry(keyed, FixedClock(1))
     assert isinstance(sink, OtelSink)
     sink.flush()
+
+
+def test_empty_environment_values_count_as_unset(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Blank lines copied from .env.example fall back to defaults instead of empty strings."""
+    for name in ("NEATLOGS_API_KEY", "AWS_REGION", "LAMBDA_FUNCTION_NAME"):
+        monkeypatch.setenv(name, "")
+    settings = EvalSettings(
+        litellm_base_url="https://llm.example.test/v1",
+        litellm_api_key=SecretStr("sk-test-only"),
+        model_budget_usd=Decimal(5),
+    )
+    assert settings.neatlogs_api_key is None
+    assert settings.aws_region == "us-east-1"
+    assert AwsSettings().lambda_function_name == "costwise-qualify"
 
 
 def test_report_and_capability_lines_cover_early_stop_and_measured_infra() -> None:

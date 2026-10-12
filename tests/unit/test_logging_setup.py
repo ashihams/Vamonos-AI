@@ -17,6 +17,8 @@ def test_redact_text_covers_bearer_labels_and_sk_keys() -> None:
     assert "sk-live-abc123" not in redacted
     assert "[REDACTED]" in redacted
     assert redact_text("task finished") == "task finished"
+    assert redact_text("runner failed for task-0001") == "runner failed for task-0001"
+    assert redact_text('key="sk-abc123"') == 'key="[REDACTED]"'
 
 
 def test_configure_logging_emits_one_redacted_json_line(

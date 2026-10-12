@@ -15,9 +15,9 @@ from costwise.adapters.data.fixture_store import JsonFixtureStore
 from costwise.apps.cli.main import app
 from costwise.bootstrap import RunnerKind, build_eval_stack
 from costwise.domain.company import CompanyRecord
-from costwise.domain.errors import ConfigError
+from costwise.domain.config import Lever
 from costwise.domain.labels import CompanyLabel
-from costwise.domain.task import Difficulty, Split
+from costwise.domain.task import Difficulty, InfraCostSource, Split
 from costwise.ports.data import CompanyFetch
 from costwise.settings import EvalSettings
 
@@ -176,12 +176,16 @@ def test_missing_settings_name_fields_without_values(workspace: Path) -> None:
     assert "model_budget_usd" in result.output
 
 
-def test_only_the_local_runner_is_wired(workspace: Path) -> None:
-    """The Lambda runner is rejected until its stage exists."""
+def test_lambda_runner_is_wired_with_measured_infra(workspace: Path) -> None:
+    """The Lambda runner adds the memory lever and measured infrastructure cost."""
+    _write_workspace(workspace, budget="5")
     settings = EvalSettings(
         litellm_base_url="https://llm.example.test/v1",
         litellm_api_key=SecretStr("sk-test-only"),
         model_budget_usd=Decimal(5),
+        aws_region="us-east-1",
     )
-    with httpx.Client() as http, pytest.raises(ConfigError, match="only the local runner"):
-        build_eval_stack(settings, RunnerKind.LAMBDA, http)
+    with httpx.Client() as http:
+        stack = build_eval_stack(settings, RunnerKind.LAMBDA, http)
+    assert stack.capabilities.infra_source is InfraCostSource.MEASURED
+    assert Lever.LAMBDA_MEMORY in stack.capabilities.levers
