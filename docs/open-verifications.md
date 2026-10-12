@@ -18,6 +18,18 @@
 - Source so far: the build spec names the attribute. The span status is also set to OK or ERROR, so the outcome shows even if neatlogs ignores the attribute.
 - Check: run `scripts/smoke_neatlogs.py` and look at the `guardrail heldout_success` span, which is a failed check.
 
+## TODO(VERIFY: the Tail log of a text-format python3.12 function ends with this REPORT line)
+
+- Where: `src/costwise/adapters/runners/report_line.py`, `_REPORT`.
+- Source so far: the build spec gives `REPORT RequestId: <id> Duration: 123.45 ms Billed Duration: 124 ms Memory Size: 512 MB Max Memory Used: 100 MB`, plus `Init Duration` on cold starts. The parser accepts tabs or spaces between fields and uses the last REPORT line in the tail. The deploy script leaves the function's log format at its default; a JSON log format would not produce this line.
+- Check: after `make lambda-deploy`, run `costwise eval baseline --run-id lambda-smoke --runner lambda --tasks 3` and confirm the results carry `billed_ms`, `memory_mb`, and a cold start on the first task.
+
+## Lambda deployment (manual, not a code marker)
+
+- Not yet run: `make lambda-deploy` needs AWS credentials for us-east-1, which the builder will set up before deploying.
+- The deploy creates one IAM role (`costwise-qualify-role`, basic execution policy only) and one function (`costwise-qualify`, python3.12, x86_64, 60 s timeout), both tagged `project=costwise`. `LITELLM_BASE_URL` and `LITELLM_API_KEY` are copied from `.env` into the function's environment variables; nothing else is.
+- `make lambda-build` was run locally on 2026-10-12: a 14.9 MB zip with Linux x86_64 wheels, the `costwise` package, `config/icp.yaml`, and 40 raw fixture files. No AWS call was made.
+
 ## neatlogs smoke check (manual, not a code marker)
 
 - Source: neatlogs engineers, as recorded in the build spec, gave OTLP over gRPC at `ingest.neatlogs.com:443` with TLS and the `x-api-key` header. Only `neatlogs.workflow.*`, `neatlogs.session.*`, and `neatlogs.end_user.id` are filterable.

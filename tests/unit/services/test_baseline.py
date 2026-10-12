@@ -4,7 +4,7 @@ from decimal import Decimal
 
 import pytest
 
-from costwise.domain.errors import ConfigError, RunnerError
+from costwise.domain.errors import ConfigError
 from costwise.domain.task import InfraCostSource
 from costwise.services.baseline import BaselineService, RunReport, project_plan, summarize_run
 from costwise.services.budget import BudgetService
@@ -78,10 +78,10 @@ def test_run_records_the_eval_summary_only_when_something_succeeded() -> None:
 
 
 def test_run_flushes_telemetry_even_when_evaluation_fails() -> None:
-    """A runner failure still flushes what was recorded."""
+    """An evaluation that raises still flushes what was recorded."""
     service, _, telemetry = _baseline(FakeRunner(LOCAL_LEVERS, InfraCostSource.MODELED, []))
-    with pytest.raises(RunnerError):
-        service.run("run-1", make_config(), make_requests(0))
+    with pytest.raises(ConfigError, match="no label for"):
+        service.run("run-1", make_config(), make_requests(99))
     assert telemetry.flushed
 
 

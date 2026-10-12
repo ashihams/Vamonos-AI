@@ -69,6 +69,10 @@ packages = ["costwise"]
 mypy_path = "src"
 warn_unused_configs = true
 
+[[tool.mypy.overrides]]
+module = ["boto3", "botocore.*"]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 addopts = "--disable-socket --cov=costwise --cov-report=term-missing --cov-fail-under=80"
 testpaths = ["tests"]

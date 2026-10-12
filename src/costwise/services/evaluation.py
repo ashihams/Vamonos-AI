@@ -5,13 +5,19 @@ from collections import deque
 from collections.abc import Mapping, Sequence
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass
+from decimal import Decimal
 
 from costwise.domain.config import OptimizerConfig
 from costwise.domain.cost import PriceBook, breakdown
-from costwise.domain.errors import BudgetExceededError, ConfigError
+from costwise.domain.errors import BudgetExceededError, ConfigError, RunnerError
 from costwise.domain.labels import CompanyLabel
 from costwise.domain.scoring import is_success
-from costwise.domain.task import InfraCostSource, QualificationRequest, TaskResult
+from costwise.domain.task import (
+    InfraCostSource,
+    InvocationResult,
+    QualificationRequest,
+    TaskResult,
+)
 from costwise.ports.budget import BudgetGuard
 from costwise.ports.clock import Clock
 from costwise.ports.runner import TaskRunner
@@ -116,9 +122,12 @@ class EvaluationService:
     def _run_one(
         self, request: QualificationRequest, config: OptimizerConfig, source: InfraCostSource
     ) -> TaskResult:
-        """Run one request and build its scored, costed result."""
+        """Run one request and build its scored, costed result; a runner failure is an error."""
         started_at = self._clock.now_ns()
-        invocation = self._runner.run(request, config)
+        try:
+            invocation = self._runner.run(request, config)
+        except RunnerError as exc:
+            invocation = _failed(request, exc)
         label = self._inputs.labels[request.domain]
         return TaskResult(
             request=request,
@@ -130,3 +139,19 @@ class EvaluationService:
             infra_source=source,
             started_at_ns=started_at,
         )
+
+
+def _failed(request: QualificationRequest, exc: RunnerError) -> InvocationResult:
+    """Return an empty invocation carrying the runner error."""
+    _LOG.warning("runner failed for %s: %s", request.task_id, exc)
+    return InvocationResult(
+        task_id=request.task_id,
+        answer=None,
+        calls=(),
+        data_credits=Decimal(0),
+        total_latency_ms=0,
+        error=f"RunnerError: {exc}",
+        billed_ms=None,
+        memory_mb=None,
+        cold_start=False,
+    )

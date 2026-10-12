@@ -51,6 +51,15 @@ def test_percentiles_use_nearest_rank() -> None:
     assert wider.p95_latency_ms == 50
 
 
+def test_cold_starts_are_left_out_of_latency_percentiles() -> None:
+    """A slow cold start does not set p95 unless asked to, or unless every task was cold."""
+    warm = make_result(ResultSpec(task_id="warm", total_latency_ms=100))
+    cold = make_result(ResultSpec(task_id="cold", total_latency_ms=900, cold_start=True))
+    assert summarize((warm, cold)).p95_latency_ms == 100
+    assert summarize((warm, cold), exclude_cold_start=False).p95_latency_ms == 900
+    assert summarize((cold,)).p95_latency_ms == 900
+
+
 def test_summary_rates_costs_and_groups() -> None:
     """Rates, component totals, and difficulty groups follow the task list."""
     hit = make_result(

@@ -9,7 +9,7 @@ _HANDLER_NAME = "costwise-json"
 _LOGGER_NAME = "costwise"
 _BEARER_SECRET = re.compile(r"(?i)(bearer\s+)\S+")
 _LABELED_SECRET = re.compile(r"(?i)((?:x-)?api[_-]?key|token|secret|authorization)(\s*[:=]\s*)\S+")
-_SK_SECRET = re.compile(r"sk-[A-Za-z0-9_-]+")
+_SK_SECRET = re.compile(r"(?<![A-Za-z0-9])sk-[A-Za-z0-9_-]+")
 
 
 def redact_text(text: str) -> str:

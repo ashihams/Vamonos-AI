@@ -142,7 +142,21 @@ Committed on its own branch, `feat/iteration`, stacked on the Stage 8 branch. No
 
 `make check` exited 0. pytest: 293 passed. Overall coverage 99.86%; domain and services at 100%. On the fake workload, the loop kept the cache (data cost 0.20 to 0.16 USD), rolled back cheap routing because hard companies were missed (EVAL and held-out success both failed), then kept a lower output cap. An end-to-end test runs `optimize --auto-approve` through the real wiring with the model endpoint mocked: 40 baseline calls, one proposer call, 40 candidate calls.
 
-Planned and not started: the report and cfo.ai export, the business plan, and the demo. Lambda remains a stretch stage.
+### 2026-10-12 — Stage 10 AWS Lambda runner (code done, not deployed)
+
+Committed on its own branch, `feat/lambda`, stacked on the Stage 9 branch. Builder's choices before building: region us-east-1, function `costwise-qualify`, AWS credentials to be set up before deploying. Nothing has been deployed and no AWS call has been made.
+
+- `LambdaRunner` invokes the function once per task with the log tail. It reads billed duration, memory size, and cold start from the `REPORT` line, and marks infrastructure cost as measured. It charges the local budget for every model call the function reports. A memory change updates the function and waits for the update to finish.
+- The handler parses the event, builds the task once per container from bundled fixtures and the model endpoint, and returns the invocation as JSON. There is no telemetry export and no Crustdata key in Lambda.
+- A failed invocation (function error or throttling) becomes one errored task instead of stopping the run. Cold starts are left out of latency percentiles.
+- `make lambda-build`, `lambda-deploy`, `lambda-teardown`. The deploy creates one role (basic execution policy only) and one function, both tagged `project=costwise`, and reminds you to tear down after the demo.
+- Fixed along the way: the log redaction filter treated the `sk-` inside `task-0001` as an API key and redacted task ids. It now needs a word boundary before `sk-`.
+
+`make check` exited 0. pytest: 318 passed. Overall coverage 99.87%; domain and services at 100%. The runner is tested against botocore's Stubber (invoke, function error, throttling, bad payloads, memory update and waiter). `make lambda-build` ran locally: a 14.9 MB zip with Linux x86_64 wheels.
+
+Open: deploying, and checking the REPORT line format against a real log.
+
+Planned and not started: the report and cfo.ai export, the business plan, and the demo.
 
 ## Demo
 

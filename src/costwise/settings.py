@@ -47,19 +47,55 @@ class NeatlogsSettings(BaseSettings):
     neatlogs_api_key: SecretStr
 
 
-class EvalSettings(BaseSettings):
-    """Model endpoint, key, budget, and paths for local evaluation runs.
+DEFAULT_AWS_REGION = "us-east-1"
+DEFAULT_LAMBDA_FUNCTION = "costwise-qualify"
 
-    Unrelated keys in a shared .env file are ignored.
+
+class EvalSettings(BaseSettings):
+    """Model endpoint, key, budget, paths, and the Lambda target for evaluation runs.
+
+    Unrelated keys in a shared .env file are ignored, and empty values count as unset.
     """
 
-    model_config = SettingsConfigDict(env_file=None, extra="ignore", frozen=True)
+    model_config = SettingsConfigDict(
+        env_file=None, extra="ignore", frozen=True, env_ignore_empty=True
+    )
 
     litellm_base_url: str
     litellm_api_key: SecretStr
     model_budget_usd: Money
     neatlogs_api_key: SecretStr | None = None
     otel_collector_endpoint: str = ""
+    aws_region: str = DEFAULT_AWS_REGION
+    lambda_function_name: str = DEFAULT_LAMBDA_FUNCTION
     config_dir: Path = Path("config")
     runs_dir: Path = Path("runs")
     fixtures_dir: Path = Path("fixtures")
+
+
+class LambdaSettings(BaseSettings):
+    """What the Lambda function needs: the model endpoint and bundled file locations.
+
+    No budget, telemetry, or Crustdata key: the driver accounts for cost and
+    the function reads company data from bundled fixtures.
+    """
+
+    model_config = SettingsConfigDict(
+        env_file=None, extra="ignore", frozen=True, env_ignore_empty=True
+    )
+
+    litellm_base_url: str
+    litellm_api_key: SecretStr
+    config_dir: Path = Path("config")
+    fixtures_dir: Path = Path("fixtures")
+
+
+class AwsSettings(BaseSettings):
+    """Region and function name for deploying and tearing down the Lambda function."""
+
+    model_config = SettingsConfigDict(
+        env_file=None, extra="ignore", frozen=True, env_ignore_empty=True
+    )
+
+    aws_region: str = DEFAULT_AWS_REGION
+    lambda_function_name: str = DEFAULT_LAMBDA_FUNCTION
