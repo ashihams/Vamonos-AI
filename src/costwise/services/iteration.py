@@ -15,6 +15,7 @@ from costwise.ports.runner import TaskRunner
 from costwise.ports.storage import ConfigStore, RunStore
 from costwise.ports.telemetry import TelemetrySink
 from costwise.services.evaluation import EvaluationService
+from costwise.services.history import earlier_rejections
 from costwise.services.optimizer import OptimizerService
 from costwise.services.verdict import Standing, Verdict, judge, split_summaries
 
@@ -58,6 +59,7 @@ class _Loop:
     current: Standing
     next_version: int
     records: list[IterationRecord]
+    earlier: tuple[Proposal, ...] = ()
     rejections: int = 0
 
 
@@ -92,7 +94,12 @@ class IterationService:
         if self._stores.runs.load_iterations(run_id):
             raise ConfigError(f"run {run_id} already has iterations; use a new run id")
         try:
-            loop = _Loop(self._baseline(run_id, start, requests), start.version + 1, [])
+            loop = _Loop(
+                self._baseline(run_id, start, requests),
+                start.version + 1,
+                [],
+                earlier_rejections(self._stores.runs, self._stores.configs, run_id, start),
+            )
             self._loop(run_id, loop, requests, iterations)
             return loop.records
         finally:
@@ -154,7 +161,11 @@ class IterationService:
         """Propose and approve one change, then verify it unless the approver said no."""
         current = loop.current
         proposal = self._deciders.optimizer.next_proposal(
-            current.config, current.eval_summary, self._runner.capabilities().levers, loop.records
+            current.config,
+            current.eval_summary,
+            self._runner.capabilities().levers,
+            loop.records,
+            loop.earlier,
         )
         if proposal is None:
             return None

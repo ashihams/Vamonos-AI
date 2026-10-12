@@ -121,6 +121,18 @@ def test_passes_only_rejected_history_to_proposers() -> None:
     assert llm.seen_rejected == [[CACHE_ON]]
 
 
+def test_earlier_rejections_count_as_rejected() -> None:
+    """Proposals rejected in earlier runs reach the proposers and are not returned again."""
+    llm = StubProposer(CACHE_ON)
+    optimizer = OptimizerService(llm, StubProposer(SMALLER_MEMORY))
+    summary = make_summary(1.0, 100)
+
+    proposal = optimizer.next_proposal(make_config(), summary, ALL_LEVERS, (), (CACHE_ON,))
+
+    assert proposal == SMALLER_MEMORY
+    assert llm.seen_rejected == [[CACHE_ON]]
+
+
 def test_discards_a_repeat_of_a_rejected_proposal(caplog: pytest.LogCaptureFixture) -> None:
     """A proposer that repeats a rejected change is overruled."""
     optimizer = OptimizerService(StubProposer(CACHE_ON), StubProposer(SMALLER_MEMORY))

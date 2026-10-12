@@ -20,6 +20,8 @@ A change is kept only when all three guardrails pass against the current accepte
 - success on the held-out split drops by at most 2 percentage points;
 - p95 latency on the evaluation split grows by at most 25%.
 
+Passing the guardrails is not enough: cost per successful task must also drop by at least `min_saving_pct` (1%) against the current accepted config, otherwise the change is rolled back. Proposals rejected in earlier runs that started from the same config are remembered and not tried again.
+
 The optimizer and the approver only ever see the evaluation split.
 
 ## Architecture
@@ -74,7 +76,7 @@ uv run costwise report --run-id demo               # writes runs/demo/report/
 
 ## Commands
 
-`optimize` reuses the stored version-1 baseline for the run id, or runs it first. Each iteration proposes one lever change, asks for approval (`--auto-approve` skips the question), re-runs the full workload, and keeps the change only if every guardrail passes against the current accepted config. It stops at the iteration limit, when nothing is left to propose, after two rejections in a row, or at the budget stop line.
+`optimize` reuses the stored version-1 baseline for the run id, or runs it first. Each iteration proposes one lever change, asks for approval (`--auto-approve` skips the question), re-runs the full workload, and keeps the change only if every guardrail passes and cost per successful task drops against the current accepted config. It stops at the iteration limit, when nothing is left to propose, after two rejections in a row, or at the budget stop line.
 
 `report` reads the stored results and iterations and writes four files to `runs/<run_id>/report/`:
 

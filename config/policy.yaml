@@ -2,6 +2,7 @@ guardrails:
   max_success_drop_pp: 2.0
   p95_multiplier: 1.25
   budget_stop_fraction: 0.8
+  min_saving_pct: 1.0
 initial_config:
   version: 1
   cheap_model: "claude-haiku"

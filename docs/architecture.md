@@ -57,11 +57,11 @@ Arrows point at what a layer may import. `lint-imports` (run by `make check`) en
 
 ## Flow of one iteration
 
-1. `IterationService` asks `OptimizerService` for one proposal, using the evaluation-split summary of the current accepted config.
+1. `IterationService` asks `OptimizerService` for one proposal, using the evaluation-split summary of the current accepted config. Rejected proposals from this run, plus those from earlier runs with the same starting config (`earlier_rejections` in `services/history.py`), count as rejected.
 2. The `Approver` sees the proposal and the evaluation evidence, then approves or declines it.
 3. An approved proposal becomes a new config version through `apply_proposal`. If the lever needs infrastructure, the runner applies it and runs three warm-up invocations that are not recorded.
 4. `EvaluationService` re-runs the whole workload. `judge` in `services/verdict.py` compares both splits against the current accepted config with `evaluate_guardrails`.
-5. The change is kept only if every guardrail passes; otherwise the infrastructure is rolled back. The record goes to the `RunStore` and the `TelemetrySink`.
+5. The change is kept only if every guardrail passes and cost per successful task drops by at least `min_saving_pct`; otherwise the infrastructure is rolled back. The record goes to the `RunStore` and the `TelemetrySink`.
 
 ## How to add a lever
 

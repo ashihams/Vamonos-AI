@@ -219,7 +219,17 @@ Second live run (`optimize --run-id demo-2 --iterations 2 --auto-approve`, build
 
 Evidence from both runs is in `evidence/demo-2026-10-12/` and `evidence/demo-2-2026-10-12/`.
 
-Planned and not started: the first live dry run, baseline, and optimize run, the neatlogs smoke check, the Lambda deploy, Entire, the cfo.ai model, the business plan, and the demo.
+### 2026-10-12 — Fixes from the live runs: require a saving, remember rejections
+
+Builder's choice after `demo-2`: fix both gaps it exposed. No paid calls were made for this.
+
+- A change is now kept only if the guardrails pass **and** cost per successful task (both splits) drops by at least `min_saving_pct`, set to 1% in `config/policy.yaml`. Otherwise it is rolled back with "guardrails passed but no saving". Under this rule the `demo-2` cache change (0.106967 to 0.106976 USD) would have been rolled back.
+- Rejected proposals are now remembered across runs. Before proposing, `optimize` collects non-accepted proposals from other runs whose version-1 config matches this run's. Both proposers see them, and an exact repeat is dropped. A near-duplicate, such as the same routing with a different threshold, is only discouraged through the prompt, not blocked.
+- New tests cover the saving rule, cross-run memory, and `RunStore.run_ids`. The integration fake now responds to the output cap and Lambda memory, so those levers change cost in tests.
+
+`make check` exited 0. pytest: 353 passed.
+
+Planned and not started: a live run after these fixes, the neatlogs smoke check, the Lambda deploy, Entire, the cfo.ai model, the business plan, and the demo.
 
 ## Demo
 

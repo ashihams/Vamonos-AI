@@ -10,11 +10,16 @@ P95_LATENCY = "p95_latency"
 
 
 class GuardrailPolicy(FrozenModel):
-    """Limits on success drop, latency, and how much of the budget may be spent."""
+    """Limits on success drop and latency, the saving a change must bring, and the budget.
+
+    ``min_saving_pct`` is how much cost per successful task must fall, in percent, for a
+    change that passes the guardrails to be kept.
+    """
 
     max_success_drop_pp: float
     p95_multiplier: float
     budget_stop_fraction: float
+    min_saving_pct: float = 0.0
 
 
 class CheckOutcome(FrozenModel):

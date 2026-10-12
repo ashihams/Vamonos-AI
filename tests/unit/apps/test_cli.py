@@ -183,15 +183,16 @@ def test_fixtures_label_counts_heldout_and_fits() -> None:
     assert "labeled=8 heldout=2 expected_fit=4" in result.output
 
 
-def test_optimize_auto_approve_keeps_a_passing_change() -> None:
-    """Easy tasks on the strong model lead to a routing change that passes the guardrails."""
+def test_optimize_auto_approve_rolls_back_a_change_that_saves_nothing() -> None:
+    """The fake runner always bills the strong model, so a routing change passes the
+    guardrails but saves nothing and is rolled back."""
     result = _RUNNER.invoke(
         app, ["optimize", "--run-id", "o1", "--iterations", "1", "--auto-approve"], obj=_deps()
     )
     assert result.exit_code == 0, result.output
     assert "iteration 1: routing=" in result.output
-    assert "kept (guardrails passed)" in result.output
-    assert "accepted config version: 2" in result.output
+    assert "rolled back (guardrails passed but no saving" in result.output
+    assert "accepted config version: 1" in result.output
 
 
 def test_optimize_without_auto_approve_asks_the_approver() -> None:

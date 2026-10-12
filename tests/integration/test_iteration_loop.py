@@ -51,7 +51,11 @@ SMALLER_MEMORY = Proposal(
 
 
 def _answers(small_memory_misses_hard: bool = False) -> RunScript:
-    """Answer from the labels; cheap routing, and optionally less memory, miss hard companies."""
+    """Answer from the labels; cheap routing, and optionally less memory, miss hard companies.
+
+    Output tokens are a quarter of the cap and billing uses the configured memory, so the
+    output-cap and memory levers change cost.
+    """
 
     def respond(request: QualificationRequest, config: OptimizerConfig) -> InvocationResult:
         """Return a correct answer unless this config misses hard companies."""
@@ -60,7 +64,13 @@ def _answers(small_memory_misses_hard: bool = False) -> RunScript:
         small = config.lambda_memory_mb < make_config().lambda_memory_mb
         misses_hard = cheap or (small_memory_misses_hard and small)
         wrong = misses_hard and label.difficulty is Difficulty.HARD
-        return make_invocation(request, label.expected_fit != wrong)
+        invocation = make_invocation(request, label.expected_fit != wrong)
+        call = invocation.calls[0].model_copy(
+            update={"output_tokens": config.max_output_tokens // 4}
+        )
+        return invocation.model_copy(
+            update={"calls": (call,), "billed_ms": 100, "memory_mb": config.lambda_memory_mb}
+        )
 
     return respond
 

@@ -45,9 +45,14 @@ class OptimizerService:
         summary: RunSummary,
         available: frozenset[Lever],
         history: Sequence[IterationRecord],
+        earlier: Sequence[Proposal] = (),
     ) -> Proposal | None:
-        """Return the first valid proposal not rejected in an earlier iteration, or None."""
-        rejected = [record.proposal for record in history if not record.accepted]
+        """Return the first valid proposal not rejected before, or None.
+
+        Rejected means rejected in an iteration of this run (``history``) or in an earlier
+        run that started from the same config (``earlier``).
+        """
+        rejected = [*earlier, *(record.proposal for record in history if not record.accepted)]
         for proposer in self._proposers:
             proposal = proposer.propose(config, summary, available, rejected)
             if proposal is not None and _usable(proposal, config, available, rejected):

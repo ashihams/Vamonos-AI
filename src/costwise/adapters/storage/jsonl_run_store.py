@@ -43,6 +43,12 @@ class JsonlRunStore:
             return []
         return _read_models(path, IterationRecord)
 
+    def run_ids(self) -> list[str]:
+        """Return the names of run directories that hold an iterations file, sorted."""
+        if not self._root.is_dir():
+            return []
+        return sorted(path.parent.name for path in self._root.glob("*/iterations.jsonl"))
+
     def _results_path(self, run_id: str, version: int) -> Path:
         """Return the results file for a checked version."""
         checked = require_version(version)

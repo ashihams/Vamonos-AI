@@ -162,7 +162,9 @@ def test_optimize_runs_one_auto_approved_iteration_end_to_end(workspace: Path) -
         app, ["optimize", "--run-id", "o1", "--iterations", "1", "--auto-approve"]
     )
     assert result.exit_code == 0, result.output
-    assert "iteration 1: cache_company_data=true kept (guardrails passed)" in result.output
+    assert "iteration 1: cache_company_data=true kept (guardrails passed, cost per" in (
+        result.output
+    )
     assert "accepted config version: 2" in result.output
     assert route.call_count == 40 + 1 + 40
     run_dir = workspace / "runs" / "o1"

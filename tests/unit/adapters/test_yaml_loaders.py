@@ -31,6 +31,7 @@ def test_example_configs_load() -> None:
     assert rule.min_employees == 50
     assert "series_a" in rule.allowed_stages
     assert policy.max_success_drop_pp == 2.0
+    assert policy.min_saving_pct == 1.0
     assert config.routing.default_tier is ModelTier.STRONG
     assert config.payload_fields is None
     assert config.lambda_memory_mb == 1024

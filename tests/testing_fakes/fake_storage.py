@@ -36,6 +36,10 @@ class InMemoryRunStore:
         """Return a copy of the iteration records in append order."""
         return list(self._iterations.get(run_id, []))
 
+    def run_ids(self) -> list[str]:
+        """Return the runs that have iteration records, sorted."""
+        return sorted(self._iterations)
+
 
 class InMemoryConfigStore:
     """Keep optimizer configs in a dictionary."""
