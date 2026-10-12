@@ -91,7 +91,20 @@ Completed and committed on its own branch, `feat/task-pipeline`, stacked on the 
 
 Measured for later cost planning: the 39 stored payloads average about 160 KB of JSON each (smallest 36 KB, largest 325 KB). The starting config sends the full payload, so each baseline call will carry tens of thousands of input tokens.
 
-Planned and not started: the local runner, neatlogs telemetry, the optimizer, the iteration loop, the business plan, and the demo. Lambda remains a stretch stage.
+### 2026-10-12 — Stage 6 local runner, evaluation, and CLI (mocked models only)
+
+Completed and committed on its own branch, `feat/eval-baseline`, stacked on the Stage 5 branch. The LiteLLM key is still not claimed, so the real `costwise dry-run --tasks 5` has not been run.
+
+- `costwise` command with `fixtures build`, `fixtures label`, `eval baseline --run-id ID [--tasks N]`, and `dry-run [--tasks 5]`. It replaces `scripts/fixtures.py`. Settings come from process variables or the gitignored `.env`; unrelated keys there are ignored. Missing settings are reported by name only, never with values.
+- `LocalRunner` runs the pipeline in-process, bills wall time rounded up to whole milliseconds at the configured memory, and offers every lever except Lambda memory. Reports print "infra cost modeled; memory lever not available locally".
+- `EvaluationService` runs up to 4 tasks at once, returns results in request order, marks repeated domains as cache hits only when the cache is on, checks the budget before each task, and on a budget stop keeps finished results and logs a warning. Results are scored against labels, costed, sent to telemetry, and saved to `runs/<id>/`.
+- `dry-run` projects measured model cost per task over the full plan (40 requests × baseline plus 3 iterations = 160 tasks) and refuses, exit 1, if that exceeds half of the remaining model budget. Telemetry is a no-op until the neatlogs stage.
+
+`make check` exited 0. pytest: 227 passed. Overall coverage 99.88%; domain and services at 100%. An end-to-end test runs the real CLI and wiring on temporary fixtures with the model endpoint mocked.
+
+Local smoke runs, same day: `costwise fixtures label` reproduced the committed labels (39 labeled, 8 held out, 8 fits; file content unchanged). `costwise eval baseline --run-id smoke --tasks 1` without a key exited 2 with "missing or invalid settings: litellm_api_key, litellm_base_url, model_budget_usd".
+
+Planned and not started: neatlogs telemetry, the optimizer, the iteration loop, the business plan, and the demo. Lambda remains a stretch stage.
 
 ## Demo
 

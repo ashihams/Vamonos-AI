@@ -15,6 +15,9 @@ dependencies = [
     "opentelemetry-exporter-otlp-proto-grpc>=1.27",
 ]
 
+[project.scripts]
+costwise = "costwise.apps.cli.main:main"
+
 [project.optional-dependencies]
 aws = ["boto3>=1.35"]
 
