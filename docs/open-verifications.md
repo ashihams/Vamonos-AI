@@ -1,15 +1,15 @@
 # Open verifications
 
-Status as of v0.1.0 (2026-10-12). Nothing below has been checked against a live model key, AWS, or the neatlogs dashboard yet.
+Status as of 2026-10-12. Live model calls and the neatlogs dashboard are partly checked, as noted per item. Nothing has been checked against AWS.
 
 | Item | Kind | Status | Who closes it |
 | --- | --- | --- | --- |
 | Crustdata credits per enrich call | code marker | Open: docs say 2 credits; the dashboard charge is unchecked | builder |
 | LiteLLM accepts `max_tokens` and returns `usage` | code marker | Partly done: Sonnet returns `usage`; Haiku and the token cap are unchecked | the first optimize run |
-| neatlogs renders `neatlogs.guardrail.passed` | code marker | Open: smoke script ready, not run | builder |
+| neatlogs renders `neatlogs.guardrail.passed` | code marker | Partly done: a failed guardrail shows as ERROR through the span status; no Passed/Blocked label seen | builder |
 | Lambda Tail log ends with the REPORT line | code marker | Open: not deployed | builder, after `make lambda-deploy` |
 | Lambda deployment | manual | Not run; the zip builds locally | builder |
-| neatlogs smoke check | manual | Not run | builder |
+| neatlogs smoke check | manual | Partly done: both traces arrived and the iteration trace nests; the task trace is unchecked | builder |
 | Collector image and file output | config | Open: image not pinned, file write untested | builder |
 | Model names and per-token prices | config | Done 2026-10-12: `claude-haiku` and `claude-sonnet-4.6` at the proxy's rates | — |
 | Crustdata USD price per credit | config | Open: `0.00` placeholder; needs a stated assumption | builder |
@@ -34,6 +34,7 @@ Status as of v0.1.0 (2026-10-12). Nothing below has been checked against a live 
 - Where: `src/costwise/adapters/telemetry/attributes.py`, `GUARDRAIL_PASSED`, set on each guardrail child span of an iteration span.
 - Source so far: the build spec names the attribute. The span status is also set to OK or ERROR, so the outcome shows even if neatlogs ignores the attribute.
 - Check: run `scripts/smoke_neatlogs.py` and look at the `guardrail heldout_success` span, which is a failed check.
+- 2026-10-12 smoke run, as seen by the builder on the dashboard: the `optimizer_iteration` trace contains `guardrail eval_success` and `guardrail heldout_success`. The failed one is marked ERROR with a cross, the trace ends with error "smoke failure", and the trace list flags it "Execution Failed". All three spans show as type CHAIN. No Passed/Blocked label was visible, so whether neatlogs reads the attribute is still unknown. The span status alone makes the outcome visible.
 
 ## TODO(VERIFY: the Tail log of a text-format python3.12 function ends with this REPORT line)
 
@@ -50,8 +51,8 @@ Status as of v0.1.0 (2026-10-12). Nothing below has been checked against a live 
 ## neatlogs smoke check (manual, not a code marker)
 
 - Source: neatlogs engineers, as recorded in the build spec, gave OTLP over gRPC at `ingest.neatlogs.com:443` with TLS and the `x-api-key` header. Only `neatlogs.workflow.*`, `neatlogs.session.*`, and `neatlogs.end_user.id` are filterable.
+- 2026-10-12, session `smoke-1791796161019`: both traces arrived at 2:39 PM IST under the `costwise` service. The iteration trace nests its two guardrail spans, as described above.
 - Still unchecked:
-  - whether the smoke trace arrives;
   - whether `gen_ai.usage.*` token fields show;
   - whether `neatlogs.workflow.*` attributes filter;
   - whether the two model-call spans nest under the task span;

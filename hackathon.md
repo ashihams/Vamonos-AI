@@ -229,7 +229,14 @@ Builder's choice after `demo-2`: fix both gaps it exposed. No paid calls were ma
 
 `make check` exited 0. pytest: 353 passed.
 
-Planned and not started: a live run after these fixes, the neatlogs smoke check, the Lambda deploy, Entire, the cfo.ai model, the business plan, and the demo.
+### 2026-10-12 — neatlogs key claimed, smoke traces sent
+
+- The neatlogs key is in the local `.env` (gitignored).
+- `scripts/smoke_neatlogs.py` sent one fake task trace and one fake iteration trace as session `smoke-1791796161019`, with no exporter errors.
+- Dashboard check by the builder: both traces arrived at 2:39 PM IST. The iteration trace shows `optimizer_iteration`, with `guardrail eval_success` and a failed `guardrail heldout_success` (ERROR) under it, ending with error "smoke failure". neatlogs flags that trace "Execution Failed". The task trace, with its token counts and model-call spans, has not been opened yet.
+- Builder's choice: no more paid model runs. The cfo.ai model will use the measured numbers already in `evidence/`. Those show no cost saving: the only cheaper change, Haiku routing, was rolled back for losing quality.
+
+Planned and not started: the rest of the neatlogs dashboard check (task trace, filters), the Lambda deploy, Entire, the cfo.ai model, the business plan, and the demo.
 
 ## Demo
 
