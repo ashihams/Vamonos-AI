@@ -277,11 +277,13 @@ Builder's choice after `demo-2`: fix both gaps it exposed. No paid calls were ma
 - Checked in a desktop browser: all sections render, rows expand, the run switch works. Phone-width layout not checked in a browser.
 - `npm run build` passed. `make check` exited 0: 367 passed, total coverage 99.89%.
 
-Planned and not started: the dashboard check of the rebuilt traces, deploying the dashboard, the Lambda deploy, and the demo.
+- Deployed on the builder's instruction to Vercel production: [dashboard-ten-beryl-63.vercel.app](https://dashboard-ten-beryl-63.vercel.app). The page and `/data/dashboard.json` both returned HTTP 200 without a login.
+
+Planned and not started: the dashboard check of the rebuilt traces, the Lambda deploy, and the demo video.
 
 ## Demo
 
-No demo URL. Nothing has been deployed or submitted.
+Results dashboard: [dashboard-ten-beryl-63.vercel.app](https://dashboard-ten-beryl-63.vercel.app), a static site showing the recorded runs `demo` and `demo-2`. Nothing has been submitted.
 
 ## Known limitations and next steps
 
