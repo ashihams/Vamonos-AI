@@ -62,6 +62,21 @@ def test_run_saves_config_evaluates_flushes_and_reports() -> None:
     assert report.total_usd == Decimal("0.0702")
 
 
+def test_run_records_the_eval_summary_only_when_something_succeeded() -> None:
+    """A summary of the EVAL results goes to telemetry; an all-failed run sends none."""
+    labels = make_labels(4)
+    service, _, telemetry = _baseline(answering_runner(labels, wrong={domain(1)}))
+    service.run("run-1", make_config(), make_requests(0, 1))
+    assert [(run, version, summary.n) for run, version, summary in telemetry.summaries] == [
+        ("run-1", 1, 2)
+    ]
+
+    all_wrong = {domain(i) for i in range(4)}
+    failing, _, quiet = _baseline(answering_runner(labels, wrong=all_wrong))
+    failing.run("run-2", make_config(), make_requests(0, 1))
+    assert quiet.summaries == []
+
+
 def test_run_flushes_telemetry_even_when_evaluation_fails() -> None:
     """A runner failure still flushes what was recorded."""
     service, _, telemetry = _baseline(FakeRunner(LOCAL_LEVERS, InfraCostSource.MODELED, []))

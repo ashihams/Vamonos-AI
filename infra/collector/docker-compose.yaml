@@ -1,0 +1,16 @@
+# Run from the repository root:
+#   docker compose --env-file .env -f infra/collector/docker-compose.yaml up -d
+# Then set OTEL_COLLECTOR_ENDPOINT=localhost:4317 so costwise sends summary metrics here.
+# Output lands in infra/collector/data/telemetry.jsonl (gitignored).
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otelcol/config.yaml"]
+    environment:
+      NEATLOGS_API_KEY: ${NEATLOGS_API_KEY:?set NEATLOGS_API_KEY in .env}
+    volumes:
+      - ./config.yaml:/etc/otelcol/config.yaml:ro
+      - ./data:/data
+    ports:
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:4318:4318"

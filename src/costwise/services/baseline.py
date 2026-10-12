@@ -3,11 +3,12 @@
 from collections.abc import Sequence
 from decimal import Decimal
 
+from costwise.domain.analysis import summarize
 from costwise.domain.config import OptimizerConfig
 from costwise.domain.cost import Money
 from costwise.domain.errors import ConfigError
 from costwise.domain.frozen import FrozenModel
-from costwise.domain.task import QualificationRequest, TaskResult
+from costwise.domain.task import QualificationRequest, Split, TaskResult
 from costwise.ports.storage import ConfigStore
 from costwise.ports.telemetry import TelemetrySink
 from costwise.services.budget import BudgetService
@@ -92,10 +93,16 @@ class BaselineService:
     def run(
         self, run_id: str, config: OptimizerConfig, requests: Sequence[QualificationRequest]
     ) -> RunReport:
-        """Save the config, evaluate the requests, flush telemetry, and report."""
+        """Save the config, evaluate, record the EVAL summary, flush telemetry, and report.
+
+        The summary is skipped when no EVAL task succeeded, because it is undefined then.
+        """
         self._configs.save(run_id, config)
         try:
             results = self._evaluation.evaluate(run_id, config, requests)
+            evaluated = [r for r in results if r.request.split is Split.EVAL]
+            if any(r.success for r in evaluated):
+                self._telemetry.record_summary(run_id, config.version, summarize(evaluated))
         finally:
             self._telemetry.flush()
         return summarize_run(len(requests), results)

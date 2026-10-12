@@ -24,6 +24,8 @@ from costwise.settings import EvalSettings
 _REPO_CONFIG = Path(__file__).resolve().parents[2] / "config"
 _URL = "https://llm.example.test/v1/chat/completions"
 _ENV_NAMES = (
+    "NEATLOGS_API_KEY",
+    "OTEL_COLLECTOR_ENDPOINT",
     "LITELLM_BASE_URL",
     "LITELLM_API_KEY",
     "MODEL_BUDGET_USD",

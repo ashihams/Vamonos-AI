@@ -12,6 +12,27 @@
 - Source so far: the neatHack models page gives the base URL `https://litellm.vision.aivar.app/v1`, Bearer auth, the OpenAI-compatible `/chat/completions` route, and reads `choices[0].message.content`. The client also sends `max_tokens` and `temperature` and reads `usage.prompt_tokens` and `usage.completion_tokens`, as the build spec requires.
 - Still unchecked: no live call yet, because the team key has not been claimed. Confirm one Nova and one Claude call return `usage`, and that `max_tokens` is honored.
 
+## TODO(VERIFY: neatlogs renders neatlogs.guardrail.passed on plain OTLP spans as Passed/Blocked)
+
+- Where: `src/costwise/adapters/telemetry/attributes.py`, `GUARDRAIL_PASSED`, set on each guardrail child span of an iteration span.
+- Source so far: the build spec names the attribute. The span status is also set to OK or ERROR, so the outcome shows even if neatlogs ignores the attribute.
+- Check: run `scripts/smoke_neatlogs.py` and look at the `guardrail heldout_success` span, which is a failed check.
+
+## neatlogs smoke check (manual, not a code marker)
+
+- Source: neatlogs engineers, as recorded in the build spec, gave OTLP over gRPC at `ingest.neatlogs.com:443` with TLS and the `x-api-key` header. Only `neatlogs.workflow.*`, `neatlogs.session.*`, and `neatlogs.end_user.id` are filterable.
+- Still unchecked:
+  - whether the smoke trace arrives;
+  - whether `gen_ai.usage.*` token fields show;
+  - whether `neatlogs.workflow.*` attributes filter;
+  - whether the two model-call spans nest under the task span;
+  - whether numeric cost attributes keep their values.
+
+## Collector image and file output (config, not a code marker)
+
+- Where: `infra/collector/docker-compose.yaml` uses `otel/opentelemetry-collector-contrib:latest`, which is not pinned. Pin a tag once one is confirmed to work.
+- Not yet run: whether the container can write `/data/telemetry.jsonl` on the mounted folder, since the image may not run as root.
+
 ## Model names and per-token prices (config values, not code markers)
 
 - Where: `config/pricing.yaml` and `config/policy.yaml` still hold `<cheap-model-name>`, `<strong-model-name>`, and `"0.00"` prices.

@@ -1,0 +1,32 @@
+# Local OpenTelemetry Collector.
+# Traces: forwarded to neatlogs (OTLP/gRPC over TLS, x-api-key header) and copied to a local file.
+# Metrics: local file only.
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch: {}
+
+exporters:
+  otlp/neatlogs:
+    endpoint: ingest.neatlogs.com:443
+    headers:
+      x-api-key: ${env:NEATLOGS_API_KEY}
+  file:
+    path: /data/telemetry.jsonl
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/neatlogs, file]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [file]
