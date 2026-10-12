@@ -1,0 +1,46 @@
+Add one build-notes commit to each open stage PR, so Entire records a checkpoint per PR.
+
+Context:
+- Repo D:\project\neat hacks, stacked PRs #1–#13 (all open). Entire is enabled for Cursor.
+- Sources for the notes, in this order: hackathon.md (build log), docs/SPEC.md (stage goals),
+  `git log` of each branch, `gh pr view N`, and the past chat transcripts in
+  C:\Users\ashih\.cursor\projects\d-project-neat-hacks\agent-transcripts (search them with Grep
+  for the stage name and file names; never read them end to end).
+
+Branch → stage → notes file:
+- chore/scaffold-quality-gates (#1) → Stage 0 → docs/build-notes/stage-00-scaffold.md
+- feat/domain-models (#2, #3) → Stage 1 → docs/build-notes/stage-01-domain.md
+- feat/ports-and-company-data (#4) → Stages 2–3 → docs/build-notes/stage-02-03-ports-and-data.md
+- feat/llm-client (#5) → Stage 4 → stage-04-llm-client.md
+- feat/task-pipeline (#6) → Stage 5 → stage-05-task-pipeline.md
+- feat/eval-baseline (#7) → Stage 6 → stage-06-eval-baseline.md
+- feat/telemetry (#8) → Stage 7 → stage-07-telemetry.md
+- feat/optimizer (#9) → Stage 8 → stage-08-optimizer.md
+- feat/iteration (#10) → Stage 9 → stage-09-iteration.md
+- feat/lambda (#11) → Stage 10 → stage-10-lambda.md
+- feat/report (#12) → Stage 11 → stage-11-report.md
+- feat/release (#13) → Stage 12 plus the live runs and fixes → stage-12-release-and-live-runs.md
+
+Each notes file (about 40–80 lines), a summary of how the stage was built with Cursor, not a code dump:
+- First line: "Written 2026-10-12 from the chat history and git log, after the stage was built."
+- What the stage had to deliver (from SPEC), and the human decisions made (AskQuestion choices).
+- How it was built: the main files, the order of work, the commands run
+  (make check, pytest, ruff, mypy, gh pr create) and their results.
+- What did not work and how it was fixed (lint/mypy/test failures, design changes, blocked commands).
+- Final check results and test counts as recorded at the time; say "not recorded" rather than guess.
+- Open items it left behind.
+
+Rules:
+- Only state what the sources show. Do not invent numbers, results, or events.
+- Never write API keys, .env contents, tokens, or names of people from fixtures/raw. Refer to
+  secrets as "the LiteLLM key" or "the neatlogs key".
+- Do one branch at a time, bottom up: git switch <branch>, write the file, git add only that file,
+  git commit -m "docs(notes): how stage N was built". When Entire asks to link the commit to the
+  session, answer yes.
+- After the first commit, run `entire checkpoint list` and confirm a checkpoint exists. If not, stop
+  and tell me (run `entire doctor`).
+- Leave .entire/ and .cursor/hooks.json untracked while switching branches. At the end, on
+  feat/release, commit .entire/settings.json, .entire/.gitignore and .cursor/hooks.json as
+  "chore: enable Entire".
+- Do not merge, rebase, or force-push. When all commits are done, show me the list of commits and
+  checkpoints and ask before pushing.
