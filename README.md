@@ -20,9 +20,17 @@ uv run costwise fixtures label      # label fixtures and choose the held-out spl
 uv run costwise dry-run --tasks 5   # small run plus a budget projection for the full plan
 uv run costwise eval baseline --run-id baseline-1
 uv run costwise optimize --run-id baseline-1 --iterations 3   # asks y/n per proposal
+uv run costwise report --run-id baseline-1                    # evidence pack and cfo.ai inputs
 ```
 
 `optimize` reuses the stored version-1 baseline for the run id, or runs it first. Each iteration proposes one lever change, asks for approval (`--auto-approve` skips the question), re-runs the full workload, and keeps the change only if every guardrail passes against the current accepted config. It stops at the iteration limit, when nothing is left to propose, after two rejections in a row, or at the budget stop line.
+
+`report` reads the stored results and iterations and writes four files to `runs/<run_id>/report/`:
+
+- `report.md`: baseline versus final accepted cost per successful task, the model, infra, and data split with a `[source: ...]` tag on every cost line, evaluation and held-out success rates on separate rows, p95 latency, the iteration table, and a section on what is measured and what is modeled.
+- `trajectory.csv`: one row per evaluated version, including rolled-back ones.
+- `cfo_inputs.json`: baseline and optimized unit costs, the cost split, task counts, and sources for the cfo.ai model. `price_per_task_usd` and `monthly_volume_scenarios` are left empty for you to fill in as assumptions.
+- `trajectory.mmd`: a Mermaid `xychart-beta` of cost per successful task by version.
 
 ## AWS Lambda runner (optional)
 

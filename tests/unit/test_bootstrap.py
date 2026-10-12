@@ -7,11 +7,13 @@ import pytest
 from pydantic import SecretStr
 
 from costwise.adapters.data.crustdata_client import CrustdataClient
+from costwise.adapters.storage.jsonl_run_store import JsonlRunStore
 from costwise.adapters.telemetry.null_sink import NullSink
 from costwise.adapters.telemetry.otel_sink import OtelSink
 from costwise.apps.cli.support import capability_lines, report_lines
 from costwise.bootstrap import (
     build_fixture_stack,
+    build_report_service,
     build_telemetry,
     default_cli_deps,
     open_crustdata_source,
@@ -21,6 +23,7 @@ from costwise.ports.runner import RunnerCapabilities
 from costwise.services.baseline import RunReport
 from costwise.settings import AwsSettings, EvalSettings
 from tests.testing_fakes import FixedClock
+from tests.unit.services.report_support import version_results
 
 _REPO_CONFIG = Path(__file__).resolve().parents[2] / "config"
 
@@ -31,6 +34,21 @@ def test_fixture_stack_reads_rule_and_workload(tmp_path: Path) -> None:
     assert stack.workload.n_requests == 40
     assert stack.rule.max_employees == 1000
     assert default_cli_deps().fixture_stack is build_fixture_stack
+
+
+def test_report_service_reads_and_writes_the_runs_directory(tmp_path: Path) -> None:
+    """The wired report service reads JSONL results and writes the report beside them."""
+    JsonlRunStore(tmp_path).save_results("r1", 1, version_results(1, "0.01", (True,) * 4))
+    bundle = build_report_service(tmp_path).build("r1")
+    folder = tmp_path / "r1" / "report"
+    assert bundle.location == folder.as_posix()
+    assert sorted(p.name for p in folder.iterdir()) == [
+        "cfo_inputs.json",
+        "report.md",
+        "trajectory.csv",
+        "trajectory.mmd",
+    ]
+    assert default_cli_deps().report_service is build_report_service
 
 
 def test_crustdata_source_reads_the_key_from_env_file(

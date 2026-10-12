@@ -20,6 +20,7 @@ from costwise.adapters.runners.lambda_runner import LambdaRunner
 from costwise.adapters.runners.local_runner import LocalRunner
 from costwise.adapters.storage.file_config_store import FileConfigStore
 from costwise.adapters.storage.jsonl_run_store import JsonlRunStore
+from costwise.adapters.storage.report_files import FileReportSink
 from costwise.adapters.storage.yaml_loaders import (
     load_guardrail_policy,
     load_icp_rule,
@@ -55,6 +56,7 @@ from costwise.services.parsing import ParsingService
 from costwise.services.payload import PayloadService
 from costwise.services.prompt import PromptService
 from costwise.services.proposers import HeuristicProposer
+from costwise.services.report import ReportService
 from costwise.services.routing import RoutingService
 from costwise.services.task import TaskService, TaskSteps
 from costwise.services.workload import WorkloadService
@@ -98,6 +100,7 @@ class CliDeps:
     fixture_stack: Callable[[Path, Path], FixtureStack]
     crustdata_source: Callable[[], AbstractContextManager[CompanyDataSource]]
     approver: Callable[[bool], Approver]
+    report_service: Callable[[Path], ReportService]
 
 
 def default_cli_deps() -> CliDeps:
@@ -107,6 +110,7 @@ def default_cli_deps() -> CliDeps:
         fixture_stack=build_fixture_stack,
         crustdata_source=open_crustdata_source,
         approver=build_approver,
+        report_service=build_report_service,
     )
 
 
@@ -197,6 +201,11 @@ def build_lambda_runner(settings: EvalSettings, budget: BudgetService) -> Lambda
 def build_approver(auto_approve: bool) -> Approver:
     """Approve everything when asked to, otherwise ask a human in the terminal."""
     return AutoApprover() if auto_approve else CliApprover()
+
+
+def build_report_service(runs_dir: Path) -> ReportService:
+    """Read stored runs and write the report next to them."""
+    return ReportService(JsonlRunStore(runs_dir), FileReportSink(runs_dir))
 
 
 def build_telemetry(settings: EvalSettings, clock: Clock) -> TelemetrySink:

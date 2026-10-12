@@ -77,6 +77,11 @@ def summarize(results: Sequence[TaskResult], exclude_cold_start: bool = True) ->
     )
 
 
+def p95_latency_ms(results: Sequence[TaskResult], exclude_cold_start: bool = True) -> int:
+    """Return the nearest-rank p95 task latency. ``results`` must be non-empty."""
+    return _nearest_rank(_latencies(results, exclude_cold_start), _P95)
+
+
 def _latencies(results: Sequence[TaskResult], exclude_cold_start: bool) -> list[int]:
     """Return task latencies, without cold starts when asked and any warm task exists."""
     warm = [r for r in results if not (exclude_cold_start and r.invocation.cold_start)]

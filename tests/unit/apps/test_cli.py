@@ -25,6 +25,7 @@ from costwise.services.fixtures import FixtureService
 from costwise.services.iteration import IterationDeciders, IterationService, IterationStores
 from costwise.services.optimizer import OptimizerService
 from costwise.services.proposers import HeuristicProposer
+from costwise.services.report import ReportService
 from tests.testing_fakes import (
     FakeCompanySource,
     InMemoryConfigStore,
@@ -33,9 +34,11 @@ from tests.testing_fakes import (
 )
 from tests.unit.domain.builders import make_company, make_config, make_prices, make_rule
 from tests.unit.eval_support import answering_runner, make_evaluation, make_labels, split_requests
+from tests.unit.services.report_support import RUN_ID, scenario_service
 
 _RUNNER = CliRunner()
 DECLINE = ApprovalDecision(approved=False, note="not now")
+_report_dirs: list[Path] = []
 
 
 def _eval_stack(cap: str) -> EvalStack:
@@ -92,7 +95,14 @@ def _deps(
         ),
         crustdata_source=lambda: nullcontext(source),
         approver=lambda auto: AutoApprover() if auto else ScriptedApprover([DECLINE]),
+        report_service=_report_service,
     )
+
+
+def _report_service(runs_dir: Path) -> ReportService:
+    """Serve the report scenario, remembering which runs directory was asked for."""
+    _report_dirs.append(runs_dir)
+    return scenario_service()[0]
 
 
 def test_eval_baseline_prints_counts_costs_and_the_modeled_infra_note() -> None:
@@ -195,6 +205,27 @@ def test_optimize_without_auto_approve_asks_the_approver() -> None:
 def test_iteration_lines_say_when_nothing_ran() -> None:
     """An empty loop still reports the accepted version."""
     assert iteration_lines([], 1) == ["no iterations ran", "accepted config version: 1"]
+
+
+def test_report_prints_the_location_and_unit_cost_change() -> None:
+    """The report command publishes the run and prints the headline change."""
+    _report_dirs.clear()
+    result = _RUNNER.invoke(
+        app, ["report", "--run-id", RUN_ID, "--runs-dir", "elsewhere"], obj=_deps()
+    )
+    assert result.exit_code == 0, result.output
+    assert _report_dirs == [Path("elsewhere")]
+    assert result.output.splitlines() == [
+        f"report written to memory://{RUN_ID}/report",
+        "cost per successful task usd: v1 0.019333 -> v2 0.014000 (-27.6%)",
+    ]
+
+
+def test_report_for_an_unknown_run_is_a_usage_error() -> None:
+    """A run without stored results exits with code 2 and a one-line message."""
+    result = _RUNNER.invoke(app, ["report", "--run-id", "absent"], obj=_deps())
+    assert result.exit_code == 2
+    assert "error: missing store file: results" in result.output
 
 
 def test_main_runs_the_app(monkeypatch: pytest.MonkeyPatch) -> None:
