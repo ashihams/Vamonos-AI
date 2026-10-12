@@ -7,6 +7,8 @@ from costwise.domain.task import Difficulty
 _ZERO = 0
 _PERCENT = 100.0
 
+ICP_FIELDS = ("employee_count", "funding_stage", "engineering_open_roles")
+
 
 class IcpRule(FrozenModel):
     """Thresholds that decide whether a company fits."""
@@ -42,6 +44,7 @@ def missing_field_count(record: CompanyRecord, rule: IcpRule) -> int:
     """Count missing employee, funding-stage, and engineering-role inputs for this rule."""
     del rule
     values = (record.employee_count, record.funding_stage, record.engineering_open_roles)
+    # Keep in step with ICP_FIELDS.
     return sum(value is None for value in values)
 
 

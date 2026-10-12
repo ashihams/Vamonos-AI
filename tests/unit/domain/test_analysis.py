@@ -80,6 +80,7 @@ def test_summary_rates_costs_and_groups() -> None:
     assert summary.n == 2
     assert summary.success_rate == 0.5
     assert summary.cache_hit_rate == 0.5
+    assert summary.repeat_rate == 0.5
     assert summary.totals.model_usd == Decimal("5")
     assert summary.totals.infra_usd == Decimal("7")
     assert summary.totals.data_usd == Decimal("9")
@@ -92,6 +93,17 @@ def test_summary_rates_costs_and_groups() -> None:
     assert summary.easy_routed_strong == 1
     assert summary.hard_routed_cheap_failed == 1
     assert set(summary.by_tier) == {"cheap", "strong"}
+
+
+def test_repeat_rate_counts_domains_seen_earlier() -> None:
+    """Of a, b, a, a, two tasks repeat an earlier domain."""
+    results = [
+        make_result(ResultSpec(task_id=f"t{i}", domain=domain))
+        for i, domain in enumerate(
+            ["a.example.com", "b.example.com", "a.example.com", "a.example.com"]
+        )
+    ]
+    assert summarize(results).repeat_rate == 0.5
 
 
 def test_token_average_sums_calls_then_averages_tasks() -> None:

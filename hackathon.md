@@ -119,7 +119,19 @@ Completed in code and committed on its own branch, `feat/telemetry`, stacked on 
 
 Open: the dashboard check (token fields, filterable attributes, span nesting, guardrail rendering) and the unpinned Collector image.
 
-Planned and not started: the optimizer, the iteration loop, the business plan, and the demo. Lambda remains a stretch stage.
+### 2026-10-12 — Stage 8 optimizer proposals
+
+Committed on its own branch, `feat/optimizer`, stacked on the Stage 7 branch. No model has been called; the model proposer is tested only against a scripted fake.
+
+- The run summary now records `repeat_rate`, the share of tasks whose domain appeared earlier in the run. This is the evidence for the cache rule.
+- `HeuristicProposer` tries five rules in a fixed order. It turns the cache on when domains repeat, and sends easy tasks to the cheap model when more than 10% of them used the strong one. It trims the payload to the three ICP fields when inputs average over 2,000 tokens, steps the output cap down when answers use under half of it, and steps Lambda memory down one size. It skips levers the runner lacks and changes already rejected.
+- Predicted savings are upper bounds from the summary, for example the data cost times the repeat rate. Lowering the output cap predicts no saving, because tokens are billed as used.
+- `LLMProposer` asks the strong model at temperature 0 for one JSON proposal. The prompt includes the lever bounds, the config, the evaluation-split summary, and past rejections. An invalid reply gets one repair attempt with the reason; a second failure or a model error returns nothing. A budget stop is not swallowed. Prompt version `propose-v1` is logged.
+- `OptimizerService` tries the model proposer, then the heuristic. It re-validates every proposal and drops any that is out of bounds, makes no change, or repeats a rejected one.
+
+`make check` exited 0. pytest: 271 passed. Overall coverage 99.79%; domain and services at 100%.
+
+Planned and not started: the iteration loop, the business plan, and the demo. Lambda remains a stretch stage.
 
 ## Demo
 
