@@ -116,6 +116,14 @@ def test_infra_source_reflects_measured_and_mixed_results() -> None:
     assert "with care" in source_notes(modeled, measured)[1]
 
 
+def test_zero_data_cost_is_explained_as_free_credits() -> None:
+    """When no version paid for data, the notes say the credits were free."""
+    free = version_stats(1, "baseline", [make_result(ResultSpec(data_usd=Decimal(0)))])
+    paid = version_stats(2, "kept", [make_result()])
+    assert any("free under the hackathon allowance" in note for note in source_notes(free))
+    assert not any("free under" in note for note in source_notes(free, paid))
+
+
 def test_change_pct_is_undefined_without_a_positive_baseline() -> None:
     """The percentage change needs both numbers and a non-zero baseline."""
     assert change_pct(Decimal("0.02"), Decimal("0.015")) == Decimal("-25.0")

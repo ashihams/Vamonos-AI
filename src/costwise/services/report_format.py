@@ -36,6 +36,11 @@ _DATA_NOTE = (
     "fetched, times the per-credit price in `config/pricing.yaml`. Companies come from "
     "frozen fixtures; a repeated company is a cache hit only when the cache lever is on."
 )
+_FREE_DATA_NOTE = (
+    "- Data cost is zero because `crustdata_usd_per_credit` is 0.00: the Crustdata credits "
+    "were free under the hackathon allowance. A paying customer would pay per credit, so "
+    "real unit costs are higher than shown."
+)
 _HELDOUT_NOTE = (
     "- Held-out companies are never shown to the optimizer or the approver. Their success "
     "rate is reported separately and is one of the guardrails."
@@ -61,7 +66,9 @@ def infra_source(*stats: VersionStats) -> str:
 def source_notes(*stats: VersionStats) -> list[str]:
     """Return the measured-versus-modeled explanation as Markdown bullets."""
     infra = _INFRA_NOTES.get(infra_source(*stats), _MIXED_INFRA_NOTE)
-    return [_MODEL_NOTE, infra, _DATA_NOTE, _HELDOUT_NOTE, _LABEL_NOTE]
+    free_data = all(stat.totals.data_usd == 0 for stat in stats)
+    data = [_DATA_NOTE, _FREE_DATA_NOTE] if free_data else [_DATA_NOTE]
+    return [_MODEL_NOTE, infra, *data, _HELDOUT_NOTE, _LABEL_NOTE]
 
 
 def change_pct(before: Decimal | None, after: Decimal | None) -> Decimal | None:

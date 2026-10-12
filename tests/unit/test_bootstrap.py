@@ -31,7 +31,7 @@ _REPO_CONFIG = Path(__file__).resolve().parents[2] / "config"
 def test_fixture_stack_reads_rule_and_workload(tmp_path: Path) -> None:
     """The fixture stack loads the ICP rule and workload settings from config files."""
     stack = build_fixture_stack(tmp_path, _REPO_CONFIG)
-    assert stack.workload.n_requests == 40
+    assert stack.workload.n_requests == 28
     assert stack.rule.max_employees == 1000
     assert default_cli_deps().fixture_stack is build_fixture_stack
 

@@ -53,7 +53,7 @@ make check                   # format, lint, types, layers, tests, coverage
 cp .env.example .env         # fill in keys locally; .env is gitignored
 ```
 
-`.env` needs `LITELLM_BASE_URL`, `LITELLM_API_KEY`, and `MODEL_BUDGET_USD` for any run. `NEATLOGS_API_KEY` turns on trace export. `CRUSTDATA_API_KEY` is only needed to fetch fixtures. Before a run, replace the `<cheap-model-name>` and `<strong-model-name>` placeholders and the `"0.00"` prices in `config/policy.yaml` and `config/pricing.yaml`.
+`.env` needs `LITELLM_BASE_URL`, `LITELLM_API_KEY`, and `MODEL_BUDGET_USD` for any run. `NEATLOGS_API_KEY` turns on trace export. `CRUSTDATA_API_KEY` is only needed to fetch fixtures. The models are `claude-haiku` (cheap) and `claude-sonnet-4.6` (strong) on the neatHack LiteLLM proxy. `config/pricing.yaml` uses the per-token rates the proxy reports for them.
 
 The raw company fixtures are not in the repository because they name real people. A fresh clone has `fixtures/domains.txt` and `fixtures/labels.json`, and must fetch the raw files once:
 
@@ -110,6 +110,6 @@ Defaults are region `us-east-1` and function `costwise-qualify`; set `AWS_REGION
 - **Companies come from frozen fixtures.** The app does not call Crustdata at run time, so data latency and live data changes are not part of the measurement. The cache lever counts repeated companies in the workload as cache hits rather than timing a real cache.
 - **Labels are rule-based.** Success means the model's answer matches the ICP rule in `config/icp.yaml`, not a human judgment. 8 of 39 fixture companies fit, so always answering "not a fit" would score about 79%.
 - **The infra lever is small.** Lambda memory only matters with the Lambda runner, and infra is a small share of cost next to model and data cost. Locally, infra cost is modeled from wall time and the memory lever is not offered.
-- **Small workload.** 40 requests over 39 companies, with 8 companies held out. Differences of a few percentage points are within noise.
-- **Placeholders.** Model names and prices in `config/` are placeholders until the builder fills them. The Lambda prices are the build spec's values and have not been checked against the AWS pricing page or a bill.
+- **Small workload.** 28 requests (23 evaluation, 5 held-out), sized so a baseline and one iteration fit the $20 shared model allowance. Differences of a few percentage points are within noise, and one held-out miss is a 20-point drop.
+- **Prices are configuration, not a bill.** Model prices are the LiteLLM proxy's own rates, read on 2026-10-12. The Lambda prices are the build spec's values and have not been checked against the AWS pricing page or a bill. The Crustdata price per credit is still `0.00`, so data cost shows as zero until an assumption is set.
 - **Not yet run live.** As of v0.1.0, no run has used a real model key, AWS, or neatlogs. Open items are tracked in [docs/open-verifications.md](docs/open-verifications.md).

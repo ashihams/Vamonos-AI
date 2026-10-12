@@ -179,7 +179,37 @@ Committed on its own branch, `feat/release`, stacked on the Stage 11 branch, and
 
 `make check` exited 0. pytest: 343 passed. Overall coverage 99.88%; domain and services at 100%. A fresh clone of the commit passed `make install && make check` with no `.env` and no raw fixtures. In that clone, `costwise --help` listed every command, and `scripts/dry_run.py` without keys exited 2 naming the missing settings.
 
-Planned and not started: claiming the LiteLLM key and filling model names and prices, the first live baseline and optimize run, the neatlogs smoke check, the Lambda deploy, Entire, the cfo.ai model, the business plan, and the demo.
+### 2026-10-12 — LiteLLM key claimed, models and prices set
+
+- The team key is in the local `.env`, which is gitignored. The proxy's model list and model info calls returned 200; no completion call has been made yet.
+- Builder's choice: `claude-haiku` (cheap) and `claude-sonnet-4.6` (strong). The proxy maps them to Bedrock Claude Haiku 4.5 and Claude Sonnet 4.6.
+- `config/pricing.yaml` uses the proxy's own rates: 1.10 / 5.50 and 3.30 / 16.50 USD per 1M input / output tokens. These are 10% above Anthropic's list prices.
+- Builder's choice: the Crustdata price per credit stays `0.00`, because data was free under the hackathon credits. The report must say so.
+
+`make check` exited 0. pytest: 343 passed.
+
+First live run: `scripts/dry_run.py --iterations 1`. All 5 of 5 tasks succeeded on `claude-sonnet-4.6`, with the full company payload of 25,748 to 50,579 input tokens per task. Model cost was 0.607 USD, about 0.121 per task. Infra cost was 0.0003 USD, modeled locally. Data cost was 0, by choice. The projected cost of a 40-task baseline plus one iteration (80 tasks) is 9.71 USD. That is more than half of the 9.39 USD left under `MODEL_BUDGET_USD=10`, so the dry run refused (exit 1), as designed.
+
+Builder's choice after the refusal: shrink the workload to 28 requests (23 evaluation, 5 held-out) and set `MODEL_BUDGET_USD=15`. The contract tests now pin their own 40-request workload, so tuning the real config cannot break them. `make check` exited 0 (343 passed).
+
+- Second dry run (`--iterations 1 --run-id dry-run-2`): all 5 of 5 succeeded, 0.608 USD. The projected cost of 56 tasks is 6.80 USD, within half of the 14.39 left. Passed.
+- Live baseline (`eval baseline --run-id demo`): 28 tasks, all on `claude-sonnet-4.6` with the full payload.
+  - Success: 27. Evaluation 22 of 23 (95.7%); held-out 5 of 5 (100%).
+  - The miss, `task-0010`, returned an invalid answer on the first try and on the retry (`ParseError`).
+  - Cost: model 2.887 USD, infra 0.0015 USD (modeled), data 0. Total 2.888 USD, so about 0.107 USD per successful task.
+  - Input tokens per call ranged from 7,495 to 50,579; output never exceeded 281.
+- Spent on the shared key so far (costwise's own accounting at the proxy's rates): about 4.10 USD.
+
+First live optimize iteration (`optimize --run-id demo --iterations 1 --auto-approve`, builder's choice to auto-approve):
+
+- The model proposer suggested routing to `claude-haiku` by default, escalating to Sonnet when 2 or more fields are missing or the company is near a threshold. It predicted a 35% saving, at medium risk.
+- Version 2 ran 27 of 28 tasks on Haiku. Model cost fell from 2.887 to 1.023 USD, and cost per successful task fell from 0.107 to 0.054 USD.
+- Quality fell: evaluation success 17 of 23 (73.9%, floor 93.7%), held-out 2 of 5 (40%, floor 98%). Both success guardrails failed, so the change was rolled back and v1 stays accepted. The p95 check passed (5,662 ms against a 6,139 ms limit).
+- This is the guardrails working on real data: the cheap model halves the unit cost, but loses too many correct answers.
+
+`costwise report --run-id demo` wrote `runs/demo/report/`. The report now explains that zero data cost means the hackathon Crustdata credits were free; a test covers this, and `make check` passed (344 tests). Spent on the shared key: about 5.1 USD, plus one proposer call.
+
+Planned and not started: the first live dry run, baseline, and optimize run, the neatlogs smoke check, the Lambda deploy, Entire, the cfo.ai model, the business plan, and the demo.
 
 ## Demo
 

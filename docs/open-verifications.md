@@ -5,13 +5,13 @@ Status as of v0.1.0 (2026-10-12). Nothing below has been checked against a live 
 | Item | Kind | Status | Who closes it |
 | --- | --- | --- | --- |
 | Crustdata credits per enrich call | code marker | Open: docs say 2 credits; the dashboard charge is unchecked | builder |
-| LiteLLM accepts `max_tokens` and returns `usage` | code marker | Open: waiting on the team key | builder, then one dry run |
+| LiteLLM accepts `max_tokens` and returns `usage` | code marker | Partly done: Sonnet returns `usage`; Haiku and the token cap are unchecked | the first optimize run |
 | neatlogs renders `neatlogs.guardrail.passed` | code marker | Open: smoke script ready, not run | builder |
 | Lambda Tail log ends with the REPORT line | code marker | Open: not deployed | builder, after `make lambda-deploy` |
 | Lambda deployment | manual | Not run; the zip builds locally | builder |
 | neatlogs smoke check | manual | Not run | builder |
 | Collector image and file output | config | Open: image not pinned, file write untested | builder |
-| Model names and per-token prices | config | Open: placeholders in `config/` | builder |
+| Model names and per-token prices | config | Done 2026-10-12: `claude-haiku` and `claude-sonnet-4.6` at the proxy's rates | — |
 | Crustdata USD price per credit | config | Open: `0.00` placeholder; needs a stated assumption | builder |
 | Crustdata endpoint, headers, and field mapping | checked | Done 2026-10-11 against the docs and one live call | — |
 
@@ -25,7 +25,9 @@ Status as of v0.1.0 (2026-10-12). Nothing below has been checked against a live 
 
 - Where: `src/costwise/adapters/llm/openai_compatible.py`.
 - Source so far: the neatHack models page gives the base URL `https://litellm.vision.aivar.app/v1`, Bearer auth, the OpenAI-compatible `/chat/completions` route, and reads `choices[0].message.content`. The client also sends `max_tokens` and `temperature` and reads `usage.prompt_tokens` and `usage.completion_tokens`, as the build spec requires.
-- Still unchecked: no live call yet, because the team key has not been claimed. Confirm one Nova and one Claude call return `usage`, and that `max_tokens` is honored.
+- 2026-10-12: the team key works. `GET /v1/models` and `GET /v1/model/info` returned 200 and list all seven models.
+- 2026-10-12 dry run: 5 `claude-sonnet-4.6` calls returned `usage` (25,748 to 50,579 input tokens, 108 to 138 output tokens).
+- Still unchecked: a `claude-haiku` call, and whether `max_tokens` is honored. No output came near the 512-token cap.
 
 ## TODO(VERIFY: neatlogs renders neatlogs.guardrail.passed on plain OTLP spans as Passed/Blocked)
 
@@ -60,11 +62,11 @@ Status as of v0.1.0 (2026-10-12). Nothing below has been checked against a live 
 - Where: `infra/collector/docker-compose.yaml` uses `otel/opentelemetry-collector-contrib:latest`, which is not pinned. Pin a tag once one is confirmed to work.
 - Not yet run: whether the container can write `/data/telemetry.jsonl` on the mounted folder, since the image may not run as root.
 
-## Model names and per-token prices (config values, not code markers)
+## Model names and per-token prices (config values, done 2026-10-12)
 
-- Where: `config/pricing.yaml` and `config/policy.yaml` still hold `<cheap-model-name>`, `<strong-model-name>`, and `"0.00"` prices.
-- Available on the shared key (models page, 2026-10-12): `nova-micro`, `nova-lite`, `nova-pro`, `nova-2-lite`, `claude-haiku`, `claude-sonnet-4.6`, `claude-opus-4.6`. The page publishes no prices.
-- Waiting on the builder to pick the cheap and strong pair and the price source.
+- Builder's choice: `claude-haiku` as the cheap model and `claude-sonnet-4.6` as the strong model, in `config/policy.yaml`.
+- Source: the proxy's `GET /v1/model/info`, which reports the rates it charges against the team key. `claude-haiku` maps to `bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0` at 1.10 / 5.50 USD per 1M input / output tokens. `claude-sonnet-4.6` maps to `bedrock/us.anthropic.claude-sonnet-4-6` at 3.30 / 16.50.
+- Cross-check: [Anthropic's pricing page](https://docs.anthropic.com/en/docs/about-claude/pricing) lists Haiku 4.5 at 1 / 5 and Sonnet 4.6 at 3 / 15, so the proxy's rates are 10% higher. The AWS Bedrock pricing page did not render its current tables to a static fetch.
 
 ## Crustdata USD price per credit (config value, not a code marker)
 
