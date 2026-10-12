@@ -29,5 +29,9 @@ class RunnerError(CostwiseError):
     """Raised when a task runner fails."""
 
 
+class MissingStoreError(CostwiseError):
+    """Raised when a stored config or result file does not exist yet."""
+
+
 class ParseError(CostwiseError):
     """Raised when a model response is not a valid qualification answer."""

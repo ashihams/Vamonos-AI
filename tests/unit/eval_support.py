@@ -31,16 +31,24 @@ def domain(index: int) -> str:
     return f"c{index:02d}.example.com"
 
 
-def make_labels(count: int) -> dict[str, CompanyLabel]:
+def make_labels(count: int, heldout: Collection[int] = ()) -> dict[str, CompanyLabel]:
     """Label count companies: even indexes fit and are easy, odd ones do not and are hard."""
     return {
         domain(i): CompanyLabel(
             expected_fit=i % 2 == 0,
             difficulty=Difficulty.EASY if i % 2 == 0 else Difficulty.HARD,
-            split=Split.EVAL,
+            split=Split.HELDOUT if i in heldout else Split.EVAL,
         )
         for i in range(count)
     }
+
+
+def split_requests(labels: dict[str, CompanyLabel], *indexes: int) -> list[QualificationRequest]:
+    """Return one request per index, with the split its label assigns."""
+    return [
+        request.model_copy(update={"split": labels[request.domain].split})
+        for request in make_requests(*indexes)
+    ]
 
 
 def make_requests(*indexes: int) -> list[QualificationRequest]:

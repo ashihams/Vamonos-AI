@@ -19,7 +19,10 @@ uv run costwise fixtures build      # fetch Crustdata fixtures (CRUSTDATA_API_KE
 uv run costwise fixtures label      # label fixtures and choose the held-out split
 uv run costwise dry-run --tasks 5   # small run plus a budget projection for the full plan
 uv run costwise eval baseline --run-id baseline-1
+uv run costwise optimize --run-id baseline-1 --iterations 3   # asks y/n per proposal
 ```
+
+`optimize` reuses the stored version-1 baseline for the run id, or runs it first. Each iteration proposes one lever change, asks for approval (`--auto-approve` skips the question), re-runs the full workload, and keeps the change only if every guardrail passes against the current accepted config. It stops at the iteration limit, when nothing is left to propose, after two rejections in a row, or at the budget stop line.
 
 ## Telemetry
 

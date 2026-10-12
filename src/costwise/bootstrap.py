@@ -8,6 +8,8 @@ from pathlib import Path
 
 import httpx
 
+from costwise.adapters.approval.auto_approver import AutoApprover
+from costwise.adapters.approval.cli_approver import CliApprover
 from costwise.adapters.data.crustdata_client import CrustdataClient
 from costwise.adapters.data.fixture_source import FixtureCompanySource
 from costwise.adapters.data.fixture_store import JsonFixtureStore
@@ -35,6 +37,7 @@ from costwise.domain.errors import ConfigError
 from costwise.domain.icp import IcpRule
 from costwise.domain.labels import WorkloadPolicy
 from costwise.domain.task import QualificationRequest
+from costwise.ports.approval import Approver
 from costwise.ports.clock import Clock
 from costwise.ports.data import CompanyDataSource
 from costwise.ports.runner import RunnerCapabilities
@@ -43,9 +46,13 @@ from costwise.services.baseline import BaselineService
 from costwise.services.budget import BudgetService
 from costwise.services.evaluation import EvaluationInputs, EvaluationService, EvaluationSinks
 from costwise.services.fixtures import FixtureService
+from costwise.services.iteration import IterationDeciders, IterationService, IterationStores
+from costwise.services.llm_proposer import LLMProposer
+from costwise.services.optimizer import OptimizerService
 from costwise.services.parsing import ParsingService
 from costwise.services.payload import PayloadService
 from costwise.services.prompt import PromptService
+from costwise.services.proposers import HeuristicProposer
 from costwise.services.routing import RoutingService
 from costwise.services.task import TaskService, TaskSteps
 from costwise.services.workload import WorkloadService
@@ -69,6 +76,7 @@ class EvalStack:
     config: OptimizerConfig
     requests: tuple[QualificationRequest, ...]
     capabilities: RunnerCapabilities
+    iteration_with: Callable[[Approver], IterationService]
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,6 +95,7 @@ class CliDeps:
     eval_stack: Callable[[RunnerKind], AbstractContextManager[EvalStack]]
     fixture_stack: Callable[[Path, Path], FixtureStack]
     crustdata_source: Callable[[], AbstractContextManager[CompanyDataSource]]
+    approver: Callable[[bool], Approver]
 
 
 def default_cli_deps() -> CliDeps:
@@ -95,6 +104,7 @@ def default_cli_deps() -> CliDeps:
         eval_stack=open_eval_stack,
         fixture_stack=build_fixture_stack,
         crustdata_source=open_crustdata_source,
+        approver=build_approver,
     )
 
 
@@ -135,25 +145,39 @@ def build_eval_stack(
         ParsingService(),
         load_icp_rule(config_dir / "icp.yaml"),
     )
-    task = TaskService(FixtureCompanySource(store), guarded_client(base_llm, budget), steps, clock)
+    llm = guarded_client(base_llm, budget)
+    task = TaskService(FixtureCompanySource(store), llm, steps, clock)
     runner = LocalRunner(task, clock)
     telemetry = build_telemetry(settings, clock)
+    runs = JsonlRunStore(settings.runs_dir)
+    configs = FileConfigStore(settings.runs_dir)
     evaluation = EvaluationService(
-        runner,
-        EvaluationInputs(prices, labels),
-        EvaluationSinks(telemetry, JsonlRunStore(settings.runs_dir)),
-        budget,
-        clock,
+        runner, EvaluationInputs(prices, labels), EvaluationSinks(telemetry, runs), budget, clock
     )
     requests = WorkloadService().build(
         labels, workload.n_requests, workload.repeat_ratio, workload.seed
     )
+    config = load_initial_config(config_dir / "policy.yaml")
+    optimizer = OptimizerService(LLMProposer(llm, config.strong_model), HeuristicProposer())
+    stores = IterationStores(runs, configs, telemetry)
+
+    def iteration_with(approver: Approver) -> IterationService:
+        """Wire the iteration loop around the chosen approver."""
+        deciders = IterationDeciders(optimizer, approver, guardrails)
+        return IterationService(evaluation, runner, deciders, stores, budget)
+
     return EvalStack(
-        baseline=BaselineService(evaluation, FileConfigStore(settings.runs_dir), telemetry, budget),
-        config=load_initial_config(config_dir / "policy.yaml"),
+        baseline=BaselineService(evaluation, configs, telemetry, budget),
+        config=config,
         requests=requests,
         capabilities=runner.capabilities(),
+        iteration_with=iteration_with,
     )
+
+
+def build_approver(auto_approve: bool) -> Approver:
+    """Approve everything when asked to, otherwise ask a human in the terminal."""
+    return AutoApprover() if auto_approve else CliApprover()
 
 
 def build_telemetry(settings: EvalSettings, clock: Clock) -> TelemetrySink:

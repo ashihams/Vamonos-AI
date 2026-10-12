@@ -131,7 +131,18 @@ Committed on its own branch, `feat/optimizer`, stacked on the Stage 7 branch. No
 
 `make check` exited 0. pytest: 271 passed. Overall coverage 99.79%; domain and services at 100%.
 
-Planned and not started: the iteration loop, the business plan, and the demo. Lambda remains a stretch stage.
+### 2026-10-12 — Stage 9 approval loop
+
+Committed on its own branch, `feat/iteration`, stacked on the Stage 8 branch. No live run: the loop has run only on fakes and against a mocked model endpoint.
+
+- `costwise optimize --run-id ID --iterations 3 [--auto-approve]` loads the stored version-1 baseline or runs it first. It refuses a stored baseline that covers different tasks, and a run id that already has iterations.
+- Each iteration: the optimizer proposes from the EVAL summary only, and the approver decides. An approved change gets a new config version and a full re-run. It is kept only if all three guardrails pass against the current accepted config; otherwise it is rolled back. A Lambda memory change also applies the infrastructure, runs 3 warm-up invocations that are excluded from results, and restores the old setting on rollback.
+- The loop stops at the iteration limit, when there is no usable proposal, after two rejections in a row (declined or failed guardrails), or at the budget stop line. A candidate cut short by the budget is recorded as not accepted. Every record is saved to `runs/<id>/iterations.jsonl` and sent to telemetry, which is flushed on exit.
+- The terminal approver prints the lever, new value, rationale, predicted change, risk, and the EVAL success rate, cost per successful task, p95, and cost split. It then reads y/n and an optional note. `--auto-approve` tags the note `auto-approved`.
+
+`make check` exited 0. pytest: 293 passed. Overall coverage 99.86%; domain and services at 100%. On the fake workload, the loop kept the cache (data cost 0.20 to 0.16 USD), rolled back cheap routing because hard companies were missed (EVAL and held-out success both failed), then kept a lower output cap. An end-to-end test runs `optimize --auto-approve` through the real wiring with the model endpoint mocked: 40 baseline calls, one proposer call, 40 candidate calls.
+
+Planned and not started: the report and cfo.ai export, the business plan, and the demo. Lambda remains a stretch stage.
 
 ## Demo
 

@@ -42,6 +42,15 @@ lambda_usd_per_request: "0.0000002"
 crustdata_usd_per_credit: "0.01"
 """
 _ANSWER = '{"icp_fit": true, "reasons": ["fits"], "headcount_band": "201-500", "stage": "series_a"}'
+_CACHE_PROPOSAL = json.dumps(
+    {
+        "lever": "cache_company_data",
+        "new_value": True,
+        "rationale": "a quarter of tasks repeat a domain",
+        "predicted_cost_change_pct": -5.0,
+        "risk": "low",
+    }
+)
 
 
 def _write_workspace(root: Path, budget: str) -> None:
@@ -128,6 +137,35 @@ def test_dry_run_refuses_when_the_projection_exceeds_half_the_budget(workspace: 
     assert result.exit_code == 1
     assert "projected model usd for 160 tasks: 1.0240" in result.output
     assert "remaining model budget usd: 1.9680" in result.output
+
+
+def _answer_or_propose(request: httpx.Request) -> httpx.Response:
+    """Answer qualification prompts, and propose turning the cache on to the optimizer."""
+    system = json.loads(request.content)["messages"][0]["content"]
+    content = _CACHE_PROPOSAL if system.startswith("You tune") else _ANSWER
+    body = {
+        "choices": [{"message": {"content": content}}],
+        "usage": {"prompt_tokens": 2000, "completion_tokens": 100},
+    }
+    return httpx.Response(200, json=body)
+
+
+@respx.mock
+def test_optimize_runs_one_auto_approved_iteration_end_to_end(workspace: Path) -> None:
+    """The model's cache proposal is applied, re-run on the full workload, and kept."""
+    _write_workspace(workspace, budget="5")
+    route = respx.post(_URL).mock(side_effect=_answer_or_propose)
+    result = CliRunner().invoke(
+        app, ["optimize", "--run-id", "o1", "--iterations", "1", "--auto-approve"]
+    )
+    assert result.exit_code == 0, result.output
+    assert "iteration 1: cache_company_data=true kept (guardrails passed)" in result.output
+    assert "accepted config version: 2" in result.output
+    assert route.call_count == 40 + 1 + 40
+    run_dir = workspace / "runs" / "o1"
+    assert (run_dir / "config_v2.json").is_file()
+    assert (run_dir / "results_v2.jsonl").is_file()
+    assert len((run_dir / "iterations.jsonl").read_text(encoding="utf-8").splitlines()) == 1
 
 
 def test_missing_settings_name_fields_without_values(workspace: Path) -> None:

@@ -6,7 +6,7 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from costwise.adapters.storage.paths import require_version, run_directory
-from costwise.domain.errors import CostwiseError
+from costwise.domain.errors import CostwiseError, MissingStoreError
 from costwise.domain.frozen import FrozenModel
 from costwise.domain.proposals import IterationRecord
 from costwise.domain.task import TaskResult
@@ -62,7 +62,7 @@ def _write_models(path: Path, models: Sequence[FrozenModel]) -> None:
 def _read_models[ModelT: FrozenModel](path: Path, model: type[ModelT]) -> list[ModelT]:
     """Read JSONL into models, raising CostwiseError when the file is missing or bad."""
     if not path.is_file():
-        raise CostwiseError(f"missing store file: {path.name}")
+        raise MissingStoreError(f"missing store file: {path.name}")
     loaded: list[ModelT] = []
     for line in path.read_text(encoding="utf-8").splitlines():
         if not line.strip():
