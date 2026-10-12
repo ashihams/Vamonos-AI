@@ -269,7 +269,15 @@ Builder's choice after `demo-2`: fix both gaps it exposed. No paid calls were ma
 - `make check` exited 0. pytest: 358 passed, total coverage 99.89%.
 - Dashboard check of the rebuilt traces: not done yet.
 
-Planned and not started: the dashboard check of the rebuilt traces, the Lambda deploy, and the demo.
+### 2026-10-12 — results dashboard
+
+- New `costwise dashboard` command, behind a `DashboardSink` port, writes the stored runs to `dashboard/public/data/dashboard.json`. It exported `demo` and `demo-2`: 2 runs, 140 task results. No new model calls.
+- `dashboard/` is a static Vite + React + TypeScript + Tailwind + Framer Motion site in a dark "Linear"-style theme. Sections: an overview with the cost-per-success trajectory, the iteration timeline (proposal, reasoning, approval, predicted versus measured change, guardrails), the version table, a filterable task table with per-call costs, the sponsor stack, and the method notes saying what is measured and what is modeled.
+- Every number on the page comes from the exported file. The Lambda tile says "Runner built, not deployed".
+- Checked in a desktop browser: all sections render, rows expand, the run switch works. Phone-width layout not checked in a browser.
+- `npm run build` passed. `make check` exited 0: 367 passed, total coverage 99.89%.
+
+Planned and not started: the dashboard check of the rebuilt traces, deploying the dashboard, the Lambda deploy, and the demo.
 
 ## Demo
 

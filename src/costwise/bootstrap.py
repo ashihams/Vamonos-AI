@@ -18,6 +18,7 @@ from costwise.adapters.llm.decorators import guarded_client
 from costwise.adapters.llm.openai_compatible import OpenAICompatibleClient
 from costwise.adapters.runners.lambda_runner import LambdaRunner
 from costwise.adapters.runners.local_runner import LocalRunner
+from costwise.adapters.storage.dashboard_file import FileDashboardSink
 from costwise.adapters.storage.file_config_store import FileConfigStore
 from costwise.adapters.storage.jsonl_run_store import JsonlRunStore
 from costwise.adapters.storage.report_files import FileReportSink
@@ -48,6 +49,7 @@ from costwise.ports.runner import RunnerCapabilities, TaskRunner
 from costwise.ports.telemetry import TelemetrySink
 from costwise.services.baseline import BaselineService
 from costwise.services.budget import BudgetService
+from costwise.services.dashboard import DashboardService
 from costwise.services.evaluation import EvaluationInputs, EvaluationService, EvaluationSinks
 from costwise.services.fixtures import FixtureService
 from costwise.services.iteration import IterationDeciders, IterationService, IterationStores
@@ -102,6 +104,7 @@ class CliDeps:
     crustdata_source: Callable[[], AbstractContextManager[CompanyDataSource]]
     approver: Callable[[bool], Approver]
     report_service: Callable[[Path], ReportService]
+    dashboard_service: Callable[[Path, Path], DashboardService]
 
 
 def default_cli_deps() -> CliDeps:
@@ -112,6 +115,9 @@ def default_cli_deps() -> CliDeps:
         crustdata_source=open_crustdata_source,
         approver=build_approver,
         report_service=build_report_service,
+        dashboard_service=lambda runs_dir, out: DashboardService(
+            JsonlRunStore(runs_dir), FileDashboardSink(out)
+        ),
     )
 
 

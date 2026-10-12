@@ -85,6 +85,14 @@ uv run costwise report --run-id demo               # writes runs/demo/report/
 - `cfo_inputs.json`: baseline and optimized unit costs, the cost split, task counts, and sources for the cfo.ai model. `price_per_task_usd` and `monthly_volume_scenarios` are left empty for you to fill in as assumptions.
 - `trajectory.mmd`: a Mermaid `xychart-beta` of cost per successful task by version.
 
+`dashboard` exports every stored run (or the ones named with `--run-id`, repeatable) to `dashboard/public/data/dashboard.json`: the report data plus every task result, with company domain, labels, reasons, model calls and costs. The `dashboard/` folder is a static Vite + React site that reads that file:
+
+```
+uv run costwise dashboard          # all runs in runs/
+cd dashboard; npm install; npm run dev     # http://localhost:5173
+npm run build                      # type-checks, then writes dashboard/dist/
+```
+
 ## AWS Lambda runner (optional)
 
 With the Lambda runner, each task is one invocation of a deployed function, and infrastructure cost is measured from the `REPORT` log line (billed duration and memory) instead of modeled. It also enables the Lambda memory lever.
