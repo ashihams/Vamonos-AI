@@ -34,6 +34,7 @@ class RunSummary(FrozenModel):
     p50_latency_ms: int
     p95_latency_ms: int
     cache_hit_rate: float
+    repeat_rate: float
     avg_input_tokens: float
     avg_output_tokens: float
     easy_routed_strong: int
@@ -45,7 +46,9 @@ def summarize(results: Sequence[TaskResult]) -> RunSummary:
 
     Token averages are the mean, over tasks, of the sum of tokens across that
     task's calls. Latency percentiles use the nearest-rank method.
-    ``success_rate`` and ``cache_hit_rate`` are fractions from 0 to 1.
+    ``success_rate``, ``cache_hit_rate``, and ``repeat_rate`` are fractions from 0 to 1.
+    ``repeat_rate`` is the share of tasks whose domain appeared earlier in ``results``,
+    which is the hit rate a company-data cache could reach.
     """
     successes = sum(1 for result in results if result.success)
     if not successes:
@@ -65,6 +68,7 @@ def summarize(results: Sequence[TaskResult]) -> RunSummary:
         p50_latency_ms=_nearest_rank(latencies, _P50),
         p95_latency_ms=_nearest_rank(latencies, _P95),
         cache_hit_rate=hits / count,
+        repeat_rate=_repeats(results) / count,
         avg_input_tokens=_avg_input_tokens(results),
         avg_output_tokens=_avg_output_tokens(results),
         easy_routed_strong=easy_strong,
@@ -135,6 +139,17 @@ def _first_tier(result: TaskResult) -> ModelTier | None:
     if not result.invocation.calls:
         return None
     return result.invocation.calls[0].tier
+
+
+def _repeats(results: Sequence[TaskResult]) -> int:
+    """Count tasks whose domain appeared earlier in the sequence."""
+    seen: set[str] = set()
+    repeats = 0
+    for result in results:
+        domain = result.request.domain
+        repeats += domain in seen
+        seen.add(domain)
+    return repeats
 
 
 def _avg_input_tokens(results: Sequence[TaskResult]) -> float:

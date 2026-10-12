@@ -192,6 +192,7 @@ def make_summary(success_rate: float, p95_latency_ms: int) -> RunSummary:
         p50_latency_ms=p95_latency_ms,
         p95_latency_ms=p95_latency_ms,
         cache_hit_rate=0.0,
+        repeat_rate=0.0,
         avg_input_tokens=0.0,
         avg_output_tokens=0.0,
         easy_routed_strong=0,
