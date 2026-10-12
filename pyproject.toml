@@ -55,12 +55,13 @@ max-args = 5
 max-statements = 40
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101"]
+"tests/**/*.py" = ["S101", "PLR2004"]
 
 [tool.mypy]
 python_version = "3.12"
 strict = true
 disallow_any_explicit = true
+plugins = ["pydantic.mypy"]
 packages = ["costwise"]
 mypy_path = "src"
 warn_unused_configs = true
