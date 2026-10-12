@@ -1,0 +1,4 @@
+version,status,tasks,successes,cost_per_successful_task_usd,model_usd,infra_usd,data_usd,eval_success_rate,heldout_success_rate,p95_latency_ms,infra_source
+1,baseline,4,3,0.019333,0.040000,0.002000,0.016000,0.6667,1.0000,400,modeled from local wall time
+2,kept,4,3,0.014000,0.024000,0.002000,0.016000,0.6667,1.0000,400,modeled from local wall time
+3,rolled back,4,1,0.030000,0.012000,0.002000,0.016000,0.3333,0.0000,400,modeled from local wall time

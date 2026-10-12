@@ -14,6 +14,8 @@ from costwise.domain.proposals import IterationRecord
 from costwise.domain.task import InfraCostSource
 from costwise.ports.runner import RunnerCapabilities
 from costwise.services.baseline import PlanProjection, RunReport
+from costwise.services.report import ReportBundle
+from costwise.services.report_format import change_pct, signed_pct, usd
 
 USAGE_ERROR = 2
 MODELED_INFRA_NOTE = "infra cost modeled; memory lever not available locally"
@@ -86,6 +88,17 @@ def _outcome(record: IterationRecord) -> str:
     if not record.decision.approved:
         return "declined"
     return "kept" if record.accepted else "rolled back"
+
+
+def bundle_lines(bundle: ReportBundle) -> list[str]:
+    """Return where the report went and the headline unit-cost change."""
+    base, final = bundle.data.baseline, bundle.data.final
+    change = signed_pct(change_pct(base.cost_per_successful_task, final.cost_per_successful_task))
+    return [
+        f"report written to {bundle.location}",
+        f"cost per successful task usd: v{base.version} {usd(base.cost_per_successful_task)}"
+        f" -> v{final.version} {usd(final.cost_per_successful_task)} ({change})",
+    ]
 
 
 def projection_lines(projection: PlanProjection) -> list[str]:

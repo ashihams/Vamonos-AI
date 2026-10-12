@@ -156,7 +156,17 @@ Committed on its own branch, `feat/lambda`, stacked on the Stage 9 branch. Build
 
 Open: deploying, and checking the REPORT line format against a real log.
 
-Planned and not started: the report and cfo.ai export, the business plan, and the demo.
+### 2026-10-12 — Stage 11 report and cfo.ai inputs
+
+Committed on its own branch, `feat/report`, stacked on the Stage 10 branch. No report has been produced from a live run yet; the outputs below come from fixed test data.
+
+- `costwise report --run-id ID` writes `report.md`, `trajectory.csv`, `cfo_inputs.json`, and `trajectory.mmd` to `runs/<id>/report/`.
+- The report compares the baseline with the last accepted version. Every cost line says where its number came from: model cost from measured tokens times configured prices, infra cost measured from Lambda REPORT lines or modeled from local wall time, and data cost modeled from fixture credits. Held-out success has its own labeled row.
+- `cfo_inputs.json` carries the two unit costs, the split, task counts, and sources. Selling price per task and monthly volumes are left empty for the builder to fill in cfo.ai as assumptions.
+
+`make check` exited 0. pytest: 341 passed. Overall coverage 99.88%; domain and services at 100%. Golden-file tests pin all four files for a fixed run (one change kept, one rolled back, one declined). The end-to-end CLI test now runs `report` after `optimize` against a mocked model endpoint.
+
+Planned and not started: the cfo.ai model, the business plan, and the demo.
 
 ## Demo
 

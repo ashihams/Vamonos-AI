@@ -166,6 +166,12 @@ def test_optimize_runs_one_auto_approved_iteration_end_to_end(workspace: Path) -
     assert (run_dir / "config_v2.json").is_file()
     assert (run_dir / "results_v2.jsonl").is_file()
     assert len((run_dir / "iterations.jsonl").read_text(encoding="utf-8").splitlines()) == 1
+    reported = CliRunner().invoke(app, ["report", "--run-id", "o1"])
+    assert reported.exit_code == 0, reported.output
+    assert "cost per successful task usd: v1 " in reported.output
+    report = (run_dir / "report" / "report.md").read_text(encoding="utf-8")
+    assert "| 1 | cache_company_data | true | approved (auto-approved) | yes |" in report
+    assert (run_dir / "report" / "cfo_inputs.json").is_file()
 
 
 def test_missing_settings_name_fields_without_values(workspace: Path) -> None:
