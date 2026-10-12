@@ -1,6 +1,11 @@
+# Model prices: the rates the neatHack LiteLLM proxy charges against the team's $20 key,
+# read from its /model/info endpoint on 2026-10-12 (per token x 1,000,000).
+# claude-haiku is bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0 and
+# claude-sonnet-4.6 is bedrock/us.anthropic.claude-sonnet-4-6. Both are 10% above
+# Anthropic's list prices ($1/$5 and $3/$15 per 1M tokens).
 models:
-  "<cheap-model-name>": { input_per_1m_usd: "0.00", output_per_1m_usd: "0.00" }
-  "<strong-model-name>": { input_per_1m_usd: "0.00", output_per_1m_usd: "0.00" }
-lambda_usd_per_gb_second: "0.0000166667"
-lambda_usd_per_request: "0.0000002"
-crustdata_usd_per_credit: "0.00"
+  "claude-haiku": { input_per_1m_usd: "1.10", output_per_1m_usd: "5.50" }
+  "claude-sonnet-4.6": { input_per_1m_usd: "3.30", output_per_1m_usd: "16.50" }
+lambda_usd_per_gb_second: "0.0000166667"   # build spec value; not yet checked against AWS
+lambda_usd_per_request: "0.0000002"        # build spec value; not yet checked against AWS
+crustdata_usd_per_credit: "0.00"           # needs a stated assumption; hackathon credits are free

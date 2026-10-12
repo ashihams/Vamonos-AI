@@ -21,6 +21,7 @@ from costwise.ports.approval import Approver
 from costwise.ports.data import CompanyDataSource, CompanyFetch
 from costwise.services.baseline import BaselineService
 from costwise.services.budget import BudgetService
+from costwise.services.dashboard import DashboardService
 from costwise.services.fixtures import FixtureService
 from costwise.services.iteration import IterationDeciders, IterationService, IterationStores
 from costwise.services.optimizer import OptimizerService
@@ -30,11 +31,12 @@ from tests.testing_fakes import (
     FakeCompanySource,
     InMemoryConfigStore,
     InMemoryFixtureStore,
+    RecordingDashboardSink,
     ScriptedApprover,
 )
 from tests.unit.domain.builders import make_company, make_config, make_prices, make_rule
 from tests.unit.eval_support import answering_runner, make_evaluation, make_labels, split_requests
-from tests.unit.services.report_support import RUN_ID, scenario_service
+from tests.unit.services.report_support import RUN_ID, scenario_service, scenario_store
 
 _RUNNER = CliRunner()
 DECLINE = ApprovalDecision(approved=False, note="not now")
@@ -96,6 +98,7 @@ def _deps(
         crustdata_source=lambda: nullcontext(source),
         approver=lambda auto: AutoApprover() if auto else ScriptedApprover([DECLINE]),
         report_service=_report_service,
+        dashboard_service=_dashboard_service,
     )
 
 
@@ -103,6 +106,12 @@ def _report_service(runs_dir: Path) -> ReportService:
     """Serve the report scenario, remembering which runs directory was asked for."""
     _report_dirs.append(runs_dir)
     return scenario_service()[0]
+
+
+def _dashboard_service(runs_dir: Path, out: Path) -> DashboardService:
+    """Serve the report scenario through a recording sink, remembering the paths asked for."""
+    _report_dirs.extend((runs_dir, out))
+    return DashboardService(scenario_store(), RecordingDashboardSink())
 
 
 def test_eval_baseline_prints_counts_costs_and_the_modeled_infra_note() -> None:
@@ -183,15 +192,16 @@ def test_fixtures_label_counts_heldout_and_fits() -> None:
     assert "labeled=8 heldout=2 expected_fit=4" in result.output
 
 
-def test_optimize_auto_approve_keeps_a_passing_change() -> None:
-    """Easy tasks on the strong model lead to a routing change that passes the guardrails."""
+def test_optimize_auto_approve_rolls_back_a_change_that_saves_nothing() -> None:
+    """The fake runner always bills the strong model, so a routing change passes the
+    guardrails but saves nothing and is rolled back."""
     result = _RUNNER.invoke(
         app, ["optimize", "--run-id", "o1", "--iterations", "1", "--auto-approve"], obj=_deps()
     )
     assert result.exit_code == 0, result.output
     assert "iteration 1: routing=" in result.output
-    assert "kept (guardrails passed)" in result.output
-    assert "accepted config version: 2" in result.output
+    assert "rolled back (guardrails passed but no saving" in result.output
+    assert "accepted config version: 1" in result.output
 
 
 def test_optimize_without_auto_approve_asks_the_approver() -> None:
@@ -224,6 +234,23 @@ def test_report_prints_the_location_and_unit_cost_change() -> None:
 def test_report_for_an_unknown_run_is_a_usage_error() -> None:
     """A run without stored results exits with code 2 and a one-line message."""
     result = _RUNNER.invoke(app, ["report", "--run-id", "absent"], obj=_deps())
+    assert result.exit_code == 2
+    assert "error: missing store file: results" in result.output
+
+
+def test_dashboard_exports_the_named_runs_to_the_chosen_file() -> None:
+    """The dashboard command prints where the document went and how much it holds."""
+    _report_dirs.clear()
+    args = ["dashboard", "--run-id", RUN_ID, "--runs-dir", "r", "--out", "o.json"]
+    result = _RUNNER.invoke(app, args, obj=_deps())
+    assert result.exit_code == 0, result.output
+    assert _report_dirs == [Path("r"), Path("o.json")]
+    assert result.output == "dashboard data written to memory://dashboard.json (1 runs, 12 tasks)\n"
+
+
+def test_dashboard_for_an_unknown_run_is_a_usage_error() -> None:
+    """A run without stored results exits with code 2."""
+    result = _RUNNER.invoke(app, ["dashboard", "--run-id", "absent"], obj=_deps())
     assert result.exit_code == 2
     assert "error: missing store file: results" in result.output
 

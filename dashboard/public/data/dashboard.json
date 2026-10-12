@@ -1,0 +1,5079 @@
+{
+ "runs": [
+  {
+   "report": {
+    "run_id": "demo",
+    "baseline": {
+     "version": 1,
+     "status": "baseline",
+     "tasks": 28,
+     "eval_tasks": 23,
+     "heldout_tasks": 5,
+     "successes": 27,
+     "totals": {
+      "model_usd": "2.88671460",
+      "infra_usd": "0.0015320363862",
+      "data_usd": "0.00"
+     },
+     "cost_per_successful_task": "0.1069720976439333333333333333",
+     "eval_success_rate": 0.9565217391304348,
+     "heldout_success_rate": 1.0,
+     "p95_latency_ms": 4911,
+     "infra_sources": [
+      "modeled"
+     ]
+    },
+    "final": {
+     "version": 1,
+     "status": "baseline",
+     "tasks": 28,
+     "eval_tasks": 23,
+     "heldout_tasks": 5,
+     "successes": 27,
+     "totals": {
+      "model_usd": "2.88671460",
+      "infra_usd": "0.0015320363862",
+      "data_usd": "0.00"
+     },
+     "cost_per_successful_task": "0.1069720976439333333333333333",
+     "eval_success_rate": 0.9565217391304348,
+     "heldout_success_rate": 1.0,
+     "p95_latency_ms": 4911,
+     "infra_sources": [
+      "modeled"
+     ]
+    },
+    "versions": [
+     {
+      "version": 1,
+      "status": "baseline",
+      "tasks": 28,
+      "eval_tasks": 23,
+      "heldout_tasks": 5,
+      "successes": 27,
+      "totals": {
+       "model_usd": "2.88671460",
+       "infra_usd": "0.0015320363862",
+       "data_usd": "0.00"
+      },
+      "cost_per_successful_task": "0.1069720976439333333333333333",
+      "eval_success_rate": 0.9565217391304348,
+      "heldout_success_rate": 1.0,
+      "p95_latency_ms": 4911,
+      "infra_sources": [
+       "modeled"
+      ]
+     },
+     {
+      "version": 2,
+      "status": "rolled back",
+      "tasks": 28,
+      "eval_tasks": 23,
+      "heldout_tasks": 5,
+      "successes": 19,
+      "totals": {
+       "model_usd": "1.02338280",
+       "infra_usd": "0.0018831870885",
+       "data_usd": "0.00"
+      },
+      "cost_per_successful_task": "0.0539613677415",
+      "eval_success_rate": 0.7391304347826086,
+      "heldout_success_rate": 0.4,
+      "p95_latency_ms": 7641,
+      "infra_sources": [
+       "modeled"
+      ]
+     }
+    ],
+    "iterations": [
+     {
+      "iteration": 1,
+      "proposal": {
+       "lever": "routing",
+       "new_value": {
+        "default_tier": "cheap",
+        "strong_if_missing_fields_gte": 2,
+        "strong_if_near_threshold": true
+       },
+       "rationale": "All 23 tasks are currently routed to the strong model, but easy tasks (6/23) have a lower success rate (5/6 = 83%) suggesting they don't benefit from the strong model. With a 26% repeat rate, routing easy/complete cases to the cheap model while escalating on missing fields or near-threshold cases should preserve accuracy on hard cases (17/17 = 100%) while cutting model costs significantly.",
+       "predicted_cost_change_pct": -35.0,
+       "risk": "medium"
+      },
+      "decision": {
+       "approved": true,
+       "note": "auto-approved"
+      },
+      "baseline_version": 1,
+      "candidate_version": 2,
+      "candidate_summary": {
+       "n": 23,
+       "success_rate": 0.7391304347826086,
+       "cost_per_successful_task": "0.04829645508502352941176470588",
+       "totals": {
+        "model_usd": "0.81947910",
+        "infra_usd": "0.0015606364454",
+        "data_usd": "0.00"
+       },
+       "by_difficulty": {
+        "easy": {
+         "n": 6,
+         "successes": 4,
+         "cost_usd": "0.2888630010024"
+        },
+        "hard": {
+         "n": 17,
+         "successes": 13,
+         "cost_usd": "0.5321767354430"
+        }
+       },
+       "by_tier": {
+        "cheap": {
+         "n": 23,
+         "successes": 17,
+         "cost_usd": "0.8210397364454"
+        }
+       },
+       "p50_latency_ms": 3770,
+       "p95_latency_ms": 5662,
+       "cache_hit_rate": 0.0,
+       "repeat_rate": 0.2608695652173913,
+       "avg_input_tokens": 29960.782608695652,
+       "avg_output_tokens": 132.47826086956522,
+       "easy_routed_strong": 0,
+       "hard_routed_cheap_failed": 4
+      },
+      "guardrails": {
+       "passed": false,
+       "checks": [
+        {
+         "name": "eval_success",
+         "passed": false,
+         "detail": "eval_success candidate=0.7391304347826086 floor=0.9365217391304348"
+        },
+        {
+         "name": "heldout_success",
+         "passed": false,
+         "detail": "heldout_success candidate=0.4 floor=0.98"
+        },
+        {
+         "name": "p95_latency",
+         "passed": true,
+         "detail": "p95 candidate=5662 limit=6138.75"
+        }
+       ]
+      },
+      "accepted": false,
+      "reason": "guardrails failed: eval_success, heldout_success"
+     }
+    ]
+   },
+   "tasks": [
+    {
+     "version": 1,
+     "task_id": "task-0001",
+     "domain": "clerk.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 208, which is within the 50–1000 range",
+      "Latest funding stage is series_c, which is one of the allowed stages",
+      "Open roles (hiring.openings_count) is null — missing value, rule fails"
+     ],
+     "error": null,
+     "latency_ms": 4911,
+     "costs": {
+      "model_usd": "0.11011770",
+      "infra_usd": "0.0000820668304",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 32789,
+       "output_tokens": 116,
+       "latency_ms": 4877,
+       "started_offset_ms": 33
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0002",
+     "domain": "airbyte.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 110, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles (openings_count) is null — missing data, rule fails"
+     ],
+     "error": null,
+     "latency_ms": 4165,
+     "costs": {
+      "model_usd": "0.13621410",
+      "infra_usd": "0.0000696334722",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 40717,
+       "output_tokens": 112,
+       "latency_ms": 4045,
+       "started_offset_ms": 117
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0003",
+     "domain": "modal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 231, which exceeds the maximum of 1000 — actually within range; headcount 231 is between 50 and 1000: PASS",
+      "Latest funding stage is series_c, which is one of the allowed stages: PASS",
+      "Open roles (openings_count) is null — missing value: FAIL"
+     ],
+     "error": null,
+     "latency_ms": 4576,
+     "costs": {
+      "model_usd": "0.10490040",
+      "infra_usd": "0.0000764834859",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 31098,
+       "output_tokens": 138,
+       "latency_ms": 4463,
+       "started_offset_ms": 105
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0004",
+     "domain": "linear.app",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 291, which is within the 50–1000 range",
+      "Latest funding round type is 'secondary_market', which is not one of seed/series_a/series_b/series_c",
+      "Open roles (hiring.openings_count) is null, so open roles cannot be confirmed"
+     ],
+     "error": null,
+     "latency_ms": 4423,
+     "costs": {
+      "model_usd": "0.16907220",
+      "infra_usd": "0.0000739334808",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 50579,
+       "output_tokens": 131,
+       "latency_ms": 4281,
+       "started_offset_ms": 141
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0005",
+     "domain": "langchain.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount is 429, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles count is 2, which is >= 0"
+     ],
+     "error": null,
+     "latency_ms": 3477,
+     "costs": {
+      "model_usd": "0.08675040",
+      "infra_usd": "0.0000581667826",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 25748,
+       "output_tokens": 108,
+       "latency_ms": 3444,
+       "started_offset_ms": 32
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0006",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39 (latest data point), which is below the required minimum of 50",
+      "Funding stage is series_b, which qualifies",
+      "Open roles (openings_count) is null, which disqualifies"
+     ],
+     "error": null,
+     "latency_ms": 3228,
+     "costs": {
+      "model_usd": "0.06499020",
+      "infra_usd": "0.0000540167743",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 19134,
+       "output_tokens": 112,
+       "latency_ms": 3156,
+       "started_offset_ms": 72
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0007",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39 (latest data point), which is below the required minimum of 50",
+      "Funding stage is series_b, which qualifies",
+      "Open roles (openings_count) is null, which disqualifies"
+     ],
+     "error": null,
+     "latency_ms": 3016,
+     "costs": {
+      "model_usd": "0.06499020",
+      "infra_usd": "0.0000504834339",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 19134,
+       "output_tokens": 112,
+       "latency_ms": 2942,
+       "started_offset_ms": 73
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0008",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39 (latest data point), which is below the required minimum of 50",
+      "Funding stage is series_b, which qualifies",
+      "Open roles (openings_count) is null, so this rule cannot be satisfied"
+     ],
+     "error": null,
+     "latency_ms": 2542,
+     "costs": {
+      "model_usd": "0.06502320",
+      "infra_usd": "0.0000425834181",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 19134,
+       "output_tokens": 114,
+       "latency_ms": 2476,
+       "started_offset_ms": 65
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0009",
+     "domain": "cal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 36, which is below the required minimum of 50",
+      "Funding stage is series_a, which is within the allowed stages (seed, series_a, series_b, series_c)",
+      "Open roles (openings_count) is null, so this criterion cannot be confirmed"
+     ],
+     "error": null,
+     "latency_ms": 2434,
+     "costs": {
+      "model_usd": "0.06982140",
+      "infra_usd": "0.0000407834145",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 20528,
+       "output_tokens": 126,
+       "latency_ms": 2351,
+       "started_offset_ms": 82
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0010",
+     "domain": "browserbase.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": null,
+     "reasons": [],
+     "error": "ParseError: model answer is not a valid qualification: 1 errors",
+     "latency_ms": 6793,
+     "costs": {
+      "model_usd": "0.13413840",
+      "infra_usd": "0.0001134335598",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 18919,
+       "output_tokens": 281,
+       "latency_ms": 3339,
+       "started_offset_ms": 105
+      },
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 18919,
+       "output_tokens": 281,
+       "latency_ms": 3348,
+       "started_offset_ms": 3444
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0011",
+     "domain": "modal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 231, which exceeds the maximum of 1000 — actually within range; headcount.total = 231, which is between 50 and 1000: PASS",
+      "Latest funding stage is series_c, which is one of the allowed stages: PASS",
+      "Open roles (hiring.openings_count) is null — missing value: FAIL"
+     ],
+     "error": null,
+     "latency_ms": 4476,
+     "costs": {
+      "model_usd": "0.10499940",
+      "infra_usd": "0.0000748501493",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 31098,
+       "output_tokens": 144,
+       "latency_ms": 4445,
+       "started_offset_ms": 30
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0012",
+     "domain": "n8n.io",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 1287 (latest data point 2026-09-07), which exceeds the 1000 upper bound",
+      "Latest funding round type is 'secondary_market', which is not in the allowed set (seed, series_a, series_b, series_c)",
+      "Open roles is 15, which meets the minimum requirement of 0"
+     ],
+     "error": null,
+     "latency_ms": 2963,
+     "costs": {
+      "model_usd": "0.13007940",
+      "infra_usd": "0.0000496500989",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 38713,
+       "output_tokens": 141,
+       "latency_ms": 2853,
+       "started_offset_ms": 109
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0013",
+     "domain": "clerk.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 208, which is within the 50–1000 range",
+      "Latest funding stage is series_c, which is one of the allowed stages",
+      "Open roles (hiring.openings_count) is null — missing value, rule fails"
+     ],
+     "error": null,
+     "latency_ms": 2470,
+     "costs": {
+      "model_usd": "0.11011770",
+      "infra_usd": "0.0000413834157",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 32789,
+       "output_tokens": 116,
+       "latency_ms": 2412,
+       "started_offset_ms": 57
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0014",
+     "domain": "joveo.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount is 457, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles count is 5, which is at least 0"
+     ],
+     "error": null,
+     "latency_ms": 2596,
+     "costs": {
+      "model_usd": "0.13152480",
+      "infra_usd": "0.0000434834199",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 39311,
+       "output_tokens": 109,
+       "latency_ms": 2469,
+       "started_offset_ms": 126
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0015",
+     "domain": "wati.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 291, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles (hiring.openings_count) is null — missing data, does not satisfy the requirement"
+     ],
+     "error": null,
+     "latency_ms": 2912,
+     "costs": {
+      "model_usd": "0.10745790",
+      "infra_usd": "0.0000487500971",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 31978,
+       "output_tokens": 117,
+       "latency_ms": 2786,
+       "started_offset_ms": 126
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0016",
+     "domain": "abacus.ai",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 289, which is within the 50–1000 range",
+      "Latest funding stage is series_c, which is an allowed stage",
+      "Open roles (openings_count) is null — missing value, rule fails"
+     ],
+     "error": null,
+     "latency_ms": 2616,
+     "costs": {
+      "model_usd": "0.08598150",
+      "infra_usd": "0.0000438167539",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 25495,
+       "output_tokens": 112,
+       "latency_ms": 2549,
+       "started_offset_ms": 66
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0017",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39 (latest data point), which is below the required minimum of 50",
+      "Funding stage is series_b, which qualifies",
+      "Open roles (openings_count) is null, which disqualifies"
+     ],
+     "error": null,
+     "latency_ms": 3229,
+     "costs": {
+      "model_usd": "0.06499020",
+      "infra_usd": "0.000054033441",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 19134,
+       "output_tokens": 112,
+       "latency_ms": 3192,
+       "started_offset_ms": 36
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0018",
+     "domain": "articulate.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 711, which exceeds the maximum of 1000 — actually within range (50–1000); PASS",
+      "Funding stage is series_a — qualifies (seed/series_a/series_b/series_c); PASS",
+      "Open roles (hiring.openings_count) is null — missing value; FAIL"
+     ],
+     "error": null,
+     "latency_ms": 2653,
+     "costs": {
+      "model_usd": "0.0730950",
+      "infra_usd": "0.0000445500887",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 21450,
+       "output_tokens": 140,
+       "latency_ms": 2607,
+       "started_offset_ms": 46
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0019",
+     "domain": "supabase.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 439, which is within the 50–1000 range",
+      "Latest funding stage is 'series_unknown', which is not one of seed, series_a, series_b, series_c",
+      "Open roles (openings_count) is null, so this rule cannot be satisfied"
+     ],
+     "error": null,
+     "latency_ms": 2871,
+     "costs": {
+      "model_usd": "0.14980350",
+      "infra_usd": "0.0000480667624",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 44755,
+       "output_tokens": 128,
+       "latency_ms": 2773,
+       "started_offset_ms": 98
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0020",
+     "domain": "linear.app",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 291, which is within the 50–1000 range",
+      "Latest funding round is 'secondary_market', not one of seed/series_a/series_b/series_c",
+      "Open roles (hiring.openings_count) is null, so open roles cannot be confirmed"
+     ],
+     "error": null,
+     "latency_ms": 2888,
+     "costs": {
+      "model_usd": "0.16902270",
+      "infra_usd": "0.0000483500963",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 50579,
+       "output_tokens": 128,
+       "latency_ms": 2839,
+       "started_offset_ms": 48
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0021",
+     "domain": "joveo.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount is 457, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles count is 5, which is at least 0"
+     ],
+     "error": null,
+     "latency_ms": 4257,
+     "costs": {
+      "model_usd": "0.13152480",
+      "infra_usd": "0.0000711668086",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 39311,
+       "output_tokens": 109,
+       "latency_ms": 4189,
+       "started_offset_ms": 65
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0022",
+     "domain": "zapier.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 1521, which exceeds the maximum of 1000",
+      "Funding stage is 'series_unknown', which is not one of seed, series_a, series_b, or series_c",
+      "Open roles is 9, which meets the minimum of 0"
+     ],
+     "error": null,
+     "latency_ms": 2356,
+     "costs": {
+      "model_usd": "0.11711040",
+      "infra_usd": "0.0000394834119",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 34868,
+       "output_tokens": 124,
+       "latency_ms": 2303,
+       "started_offset_ms": 53
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0023",
+     "domain": "lucidya.com",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 372, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles (openings_count) is null — missing data, company does not fit"
+     ],
+     "error": null,
+     "latency_ms": 2543,
+     "costs": {
+      "model_usd": "0.10856340",
+      "infra_usd": "0.0000426000848",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 32328,
+       "output_tokens": 114,
+       "latency_ms": 2501,
+       "started_offset_ms": 40
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0024",
+     "domain": "nelogica.com.br",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 607, which exceeds the maximum of 1000 — actually within range (50–1000); PASS",
+      "Funding stage is series_a — PASS",
+      "Open roles (openings_count) is null — FAIL"
+     ],
+     "error": null,
+     "latency_ms": 2567,
+     "costs": {
+      "model_usd": "0.11633160",
+      "infra_usd": "0.0000430000856",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 34662,
+       "output_tokens": 118,
+       "latency_ms": 2515,
+       "started_offset_ms": 52
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0025",
+     "domain": "sarvam.ai",
+     "split": "heldout",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount is 437, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles count is 2, which is ≥ 0"
+     ],
+     "error": null,
+     "latency_ms": 3494,
+     "costs": {
+      "model_usd": "0.08660850",
+      "infra_usd": "0.0000584501165",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 25690,
+       "output_tokens": 111,
+       "latency_ms": 3428,
+       "started_offset_ms": 66
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0026",
+     "domain": "thriveglobal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 583, which exceeds the maximum of 1000 — actually within range (50–1000): PASS",
+      "Funding stage is series_c, which is one of the allowed stages: PASS",
+      "Open roles (hiring.openings_count) is null — missing value: FAIL"
+     ],
+     "error": null,
+     "latency_ms": 2684,
+     "costs": {
+      "model_usd": "0.08760510",
+      "infra_usd": "0.0000449500895",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 25892,
+       "output_tokens": 131,
+       "latency_ms": 2650,
+       "started_offset_ms": 31
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0027",
+     "domain": "resend.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 78, which is within the 50–1000 range",
+      "Latest funding stage is series_a, which is an allowed stage",
+      "Open roles (openings_count) is null — missing data, fails rule"
+     ],
+     "error": null,
+     "latency_ms": 2320,
+     "costs": {
+      "model_usd": "0.07954650",
+      "infra_usd": "0.0000390000776",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 23545,
+       "output_tokens": 112,
+       "latency_ms": 2246,
+       "started_offset_ms": 73
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0028",
+     "domain": "neon.tech",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 3, which is below the required minimum of 50",
+      "Funding stage is null/missing — no qualifying funding round found",
+      "Open roles data is null/missing"
+     ],
+     "error": null,
+     "latency_ms": 2078,
+     "costs": {
+      "model_usd": "0.02633400",
+      "infra_usd": "0.000034866736",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 7495,
+       "output_tokens": 97,
+       "latency_ms": 2034,
+       "started_offset_ms": 44
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0001",
+     "domain": "clerk.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 208, which is within the 50-1000 range ✓",
+      "Latest funding stage is series_c, which is in the allowed list ✓",
+      "Open roles count is null, which fails the requirement of at least 0 ✗"
+     ],
+     "error": null,
+     "latency_ms": 3746,
+     "costs": {
+      "model_usd": "0.03673780",
+      "infra_usd": "0.0000626501249",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 32788,
+       "output_tokens": 122,
+       "latency_ms": 3724,
+       "started_offset_ms": 22
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0002",
+     "domain": "airbyte.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 110, which is within the 50-1000 range ✓",
+      "Latest funding stage is series_b, which is in the allowed list ✓",
+      "Open roles data is missing or null ✗"
+     ],
+     "error": null,
+     "latency_ms": 5636,
+     "costs": {
+      "model_usd": "0.04540910",
+      "infra_usd": "0.0000941501879",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 40716,
+       "output_tokens": 113,
+       "latency_ms": 5589,
+       "started_offset_ms": 46
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0003",
+     "domain": "modal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 231, which exceeds the maximum of 1000 ✓",
+      "Latest funding stage is series_c, which is in the allowed list ✓",
+      "Open roles count is null/missing, which fails the requirement ✗"
+     ],
+     "error": null,
+     "latency_ms": 3382,
+     "costs": {
+      "model_usd": "0.03485020",
+      "infra_usd": "0.0000565834461",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 31097,
+       "output_tokens": 117,
+       "latency_ms": 3311,
+       "started_offset_ms": 70
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0004",
+     "domain": "linear.app",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 291 falls within 50-1000 range",
+      "Latest funding stage is secondary_market (most recent), but last primary round was series_c which qualifies",
+      "Open roles data is missing/null, but requirement is at least 0 which is satisfied"
+     ],
+     "error": null,
+     "latency_ms": 4283,
+     "costs": {
+      "model_usd": "0.05630680",
+      "infra_usd": "0.0000716001428",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 50578,
+       "output_tokens": 122,
+       "latency_ms": 4198,
+       "started_offset_ms": 83
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0005",
+     "domain": "langchain.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 429 falls within 50-1000 range",
+      "Latest funding stage is series_b, which is in the allowed list",
+      "Open roles count of 2 meets the minimum threshold of 0"
+     ],
+     "error": null,
+     "latency_ms": 3619,
+     "costs": {
+      "model_usd": "0.02892120",
+      "infra_usd": "0.000060533454",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 25747,
+       "output_tokens": 109,
+       "latency_ms": 3595,
+       "started_offset_ms": 23
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0006",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39, which is below the minimum of 50",
+      "Latest funding stage is series_b, which qualifies",
+      "Open roles count is null/missing, cannot verify minimum of 0"
+     ],
+     "error": null,
+     "latency_ms": 3770,
+     "costs": {
+      "model_usd": "0.02160730",
+      "infra_usd": "0.0000630501257",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 19133,
+       "output_tokens": 102,
+       "latency_ms": 3714,
+       "started_offset_ms": 56
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0007",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39, which is below the minimum of 50",
+      "Latest funding stage is series_b, which qualifies",
+      "Open roles count is null/missing, cannot verify minimum of 0"
+     ],
+     "error": null,
+     "latency_ms": 3237,
+     "costs": {
+      "model_usd": "0.02160730",
+      "infra_usd": "0.0000541667746",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 19133,
+       "output_tokens": 102,
+       "latency_ms": 3202,
+       "started_offset_ms": 29
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0008",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39, which is below the minimum of 50",
+      "Latest funding stage is series_b, which qualifies",
+      "Open roles count is null/missing, cannot verify minimum of 0"
+     ],
+     "error": null,
+     "latency_ms": 3015,
+     "costs": {
+      "model_usd": "0.02160730",
+      "infra_usd": "0.0000504667672",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 19133,
+       "output_tokens": 102,
+       "latency_ms": 2946,
+       "started_offset_ms": 68
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0009",
+     "domain": "cal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 36 falls within 50-1000 range",
+      "Latest funding stage is series_a, which is in the allowed list",
+      "Open roles data is missing/null, but requirement is at least 0 (satisfied)"
+     ],
+     "error": null,
+     "latency_ms": 3376,
+     "costs": {
+      "model_usd": "0.02320120",
+      "infra_usd": "0.0000564834459",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 20527,
+       "output_tokens": 113,
+       "latency_ms": 3350,
+       "started_offset_ms": 26
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0010",
+     "domain": "browserbase.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": null,
+     "reasons": [],
+     "error": "ParseError: model answer is not a valid qualification: 1 errors",
+     "latency_ms": 8569,
+     "costs": {
+      "model_usd": "0.08951800",
+      "infra_usd": "0.000143033619",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 18918,
+       "output_tokens": 298,
+       "latency_ms": 4169,
+       "started_offset_ms": 8
+      },
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 18919,
+       "output_tokens": 281,
+       "latency_ms": 4391,
+       "started_offset_ms": 4178
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0011",
+     "domain": "modal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 231, which exceeds the maximum of 1000 ✓",
+      "Latest funding stage is series_c, which is in the allowed list ✓",
+      "Open roles count is null/missing, which fails the requirement ✗"
+     ],
+     "error": null,
+     "latency_ms": 2935,
+     "costs": {
+      "model_usd": "0.03485020",
+      "infra_usd": "0.0000491334312",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 31097,
+       "output_tokens": 117,
+       "latency_ms": 2892,
+       "started_offset_ms": 36
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0012",
+     "domain": "n8n.io",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 1,287 falls within 50-1000 range",
+      "Latest funding stage is secondary_market, but most recent primary round is series_c which qualifies",
+      "Open roles count of 15 meets minimum threshold of 0"
+     ],
+     "error": null,
+     "latency_ms": 3158,
+     "costs": {
+      "model_usd": "0.04322120",
+      "infra_usd": "0.000052866772",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 38712,
+       "output_tokens": 116,
+       "latency_ms": 3053,
+       "started_offset_ms": 104
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0013",
+     "domain": "clerk.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 208, which is within the 50-1000 range ✓",
+      "Latest funding stage is series_c, which is in the allowed list ✓",
+      "Open roles count is null, which fails the requirement of at least 0 ✗"
+     ],
+     "error": null,
+     "latency_ms": 4057,
+     "costs": {
+      "model_usd": "0.03673780",
+      "infra_usd": "0.0000678334686",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 32788,
+       "output_tokens": 122,
+       "latency_ms": 4029,
+       "started_offset_ms": 26
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0014",
+     "domain": "joveo.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 457 falls within the 50-1000 range",
+      "Latest funding stage is series_b, which is in the allowed list",
+      "Open roles count of 5 meets the minimum threshold of 0"
+     ],
+     "error": null,
+     "latency_ms": 4517,
+     "costs": {
+      "model_usd": "0.0438460",
+      "infra_usd": "0.0000755168173",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 39310,
+       "output_tokens": 110,
+       "latency_ms": 4421,
+       "started_offset_ms": 95
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0015",
+     "domain": "wati.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount 291 is within range 50-1000",
+      "Latest funding stage is series_b, which is in the allowed list",
+      "Open roles data is missing/null, but requirement is at least 0 (satisfied by default)"
+     ],
+     "error": null,
+     "latency_ms": 5171,
+     "costs": {
+      "model_usd": "0.03579620",
+      "infra_usd": "0.0000864001724",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 31977,
+       "output_tokens": 113,
+       "latency_ms": 5088,
+       "started_offset_ms": 82
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0016",
+     "domain": "abacus.ai",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 289 falls within 50-1000 range",
+      "Latest funding stage is series_c, which is in the allowed list",
+      "Open roles data is missing/null, but requirement is at least 0, so this passes"
+     ],
+     "error": null,
+     "latency_ms": 3929,
+     "costs": {
+      "model_usd": "0.02867040",
+      "infra_usd": "0.000065700131",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 25494,
+       "output_tokens": 114,
+       "latency_ms": 3906,
+       "started_offset_ms": 23
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0017",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39, which is below the minimum of 50",
+      "Latest funding stage is series_b, which qualifies",
+      "Open roles count is null/missing, cannot verify minimum of 0"
+     ],
+     "error": null,
+     "latency_ms": 3930,
+     "costs": {
+      "model_usd": "0.02160730",
+      "infra_usd": "0.0000657167977",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 19133,
+       "output_tokens": 102,
+       "latency_ms": 3832,
+       "started_offset_ms": 97
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0018",
+     "domain": "articulate.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount 711 exceeds maximum of 1000 - PASS",
+      "Funding stage is series_a - PASS",
+      "Open roles count is null or missing - FAIL"
+     ],
+     "error": null,
+     "latency_ms": 2910,
+     "costs": {
+      "model_usd": "0.02416040",
+      "infra_usd": "0.0000487167637",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 21449,
+       "output_tokens": 103,
+       "latency_ms": 2898,
+       "started_offset_ms": 12
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0019",
+     "domain": "supabase.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 439, which exceeds the maximum of 1000 - PASS",
+      "Latest funding stage is 'series_unknown', which is not in the allowed list (seed, series_a, series_b, series_c) - FAIL",
+      "Open roles data is missing/null - FAIL"
+     ],
+     "error": null,
+     "latency_ms": 3150,
+     "costs": {
+      "model_usd": "0.04992240",
+      "infra_usd": "0.0000527334384",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 44754,
+       "output_tokens": 126,
+       "latency_ms": 3047,
+       "started_offset_ms": 102
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0020",
+     "domain": "linear.app",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 291 falls within 50-1000 range",
+      "Latest funding stage is secondary_market (most recent), but last primary round was series_c which qualifies",
+      "Open roles data is missing/null, but requirement is at least 0 which is satisfied"
+     ],
+     "error": null,
+     "latency_ms": 7641,
+     "costs": {
+      "model_usd": "0.05630680",
+      "infra_usd": "0.0001275669214",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 50578,
+       "output_tokens": 122,
+       "latency_ms": 7538,
+       "started_offset_ms": 103
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0021",
+     "domain": "joveo.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 457 falls within the 50-1000 range",
+      "Latest funding stage is series_b, which is in the allowed list",
+      "Open roles count of 5 meets the minimum threshold of 0"
+     ],
+     "error": null,
+     "latency_ms": 4538,
+     "costs": {
+      "model_usd": "0.0438460",
+      "infra_usd": "0.0000758501513",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 39310,
+       "output_tokens": 110,
+       "latency_ms": 4453,
+       "started_offset_ms": 84
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0022",
+     "domain": "zapier.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount 1521 exceeds maximum of 1000",
+      "Funding stage 'series_unknown' is not in the allowed list (seed, series_a, series_b, series_c)",
+      "Open roles 9 meets minimum requirement of 0"
+     ],
+     "error": null,
+     "latency_ms": 5662,
+     "costs": {
+      "model_usd": "0.03900820",
+      "infra_usd": "0.0000946001888",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 34867,
+       "output_tokens": 119,
+       "latency_ms": 5640,
+       "started_offset_ms": 21
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0023",
+     "domain": "lucidya.com",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount 372 is within range 50-1000",
+      "Latest funding stage is series_b",
+      "Open roles data is missing/null, but requirement is at least 0 (satisfied by default)"
+     ],
+     "error": null,
+     "latency_ms": 2676,
+     "costs": {
+      "model_usd": "0.03614270",
+      "infra_usd": "0.0000448167559",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 32327,
+       "output_tokens": 106,
+       "latency_ms": 2641,
+       "started_offset_ms": 34
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0024",
+     "domain": "nelogica.com.br",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount 607 is within range 50-1000",
+      "Latest funding stage is series_a",
+      "Open roles data is missing/null, but requirement is >= 0 (satisfied by absence of negative value)"
+     ],
+     "error": null,
+     "latency_ms": 4324,
+     "costs": {
+      "model_usd": "0.03872660",
+      "infra_usd": "0.0000722834775",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 34661,
+       "output_tokens": 109,
+       "latency_ms": 4276,
+       "started_offset_ms": 47
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0025",
+     "domain": "sarvam.ai",
+     "split": "heldout",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 437 falls within 50-1000 range",
+      "Latest funding stage is series_b",
+      "Open roles count is 2, which meets minimum of 0"
+     ],
+     "error": null,
+     "latency_ms": 2458,
+     "costs": {
+      "model_usd": "0.02881340",
+      "infra_usd": "0.000041200082",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 25689,
+       "output_tokens": 101,
+       "latency_ms": 2408,
+       "started_offset_ms": 49
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0026",
+     "domain": "thriveglobal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 583, which exceeds the maximum of 1000 (within range)",
+      "Latest funding stage is series_c, which is in the allowed list (within range)",
+      "Open roles count is null/missing, which fails the requirement"
+     ],
+     "error": null,
+     "latency_ms": 3930,
+     "costs": {
+      "model_usd": "0.02911260",
+      "infra_usd": "0.0000657167977",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 25891,
+       "output_tokens": 115,
+       "latency_ms": 3899,
+       "started_offset_ms": 31
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0027",
+     "domain": "resend.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 78, which exceeds the maximum of 1000 - PASS",
+      "Latest funding stage is series_a, which is in the allowed list - PASS",
+      "Open roles count is null/missing - FAIL"
+     ],
+     "error": null,
+     "latency_ms": 2774,
+     "costs": {
+      "model_usd": "0.02651440",
+      "infra_usd": "0.0000464500925",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 23544,
+       "output_tokens": 112,
+       "latency_ms": 2734,
+       "started_offset_ms": 39
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0028",
+     "domain": "neon.tech",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 3, which is below the required minimum of 50",
+      "Funding stage is null/missing — no qualifying funding round found",
+      "Open roles data is null/missing"
+     ],
+     "error": null,
+     "latency_ms": 2229,
+     "costs": {
+      "model_usd": "0.02633400",
+      "infra_usd": "0.000037366741",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 7495,
+       "output_tokens": 97,
+       "latency_ms": 2221,
+       "started_offset_ms": 8
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "report": {
+    "run_id": "demo-2",
+    "baseline": {
+     "version": 1,
+     "status": "baseline",
+     "tasks": 28,
+     "eval_tasks": 23,
+     "heldout_tasks": 5,
+     "successes": 27,
+     "totals": {
+      "model_usd": "2.88648360",
+      "infra_usd": "0.0016208365638",
+      "data_usd": "0.00"
+     },
+     "cost_per_successful_task": "0.1069668309838444444444444444",
+     "eval_success_rate": 0.9565217391304348,
+     "heldout_success_rate": 1.0,
+     "p95_latency_ms": 5636,
+     "infra_sources": [
+      "modeled"
+     ]
+    },
+    "final": {
+     "version": 3,
+     "status": "kept",
+     "tasks": 28,
+     "eval_tasks": 23,
+     "heldout_tasks": 5,
+     "successes": 27,
+     "totals": {
+      "model_usd": "2.88676410",
+      "infra_usd": "0.0015890698336",
+      "data_usd": "0.00"
+     },
+     "cost_per_successful_task": "0.1069760433271703703703703704",
+     "eval_success_rate": 0.9565217391304348,
+     "heldout_success_rate": 1.0,
+     "p95_latency_ms": 5771,
+     "infra_sources": [
+      "modeled"
+     ]
+    },
+    "versions": [
+     {
+      "version": 1,
+      "status": "baseline",
+      "tasks": 28,
+      "eval_tasks": 23,
+      "heldout_tasks": 5,
+      "successes": 27,
+      "totals": {
+       "model_usd": "2.88648360",
+       "infra_usd": "0.0016208365638",
+       "data_usd": "0.00"
+      },
+      "cost_per_successful_task": "0.1069668309838444444444444444",
+      "eval_success_rate": 0.9565217391304348,
+      "heldout_success_rate": 1.0,
+      "p95_latency_ms": 5636,
+      "infra_sources": [
+       "modeled"
+      ]
+     },
+     {
+      "version": 2,
+      "status": "rolled back",
+      "tasks": 28,
+      "eval_tasks": 23,
+      "heldout_tasks": 5,
+      "successes": 19,
+      "totals": {
+       "model_usd": "1.02338280",
+       "infra_usd": "0.0017603701762",
+       "data_usd": "0.00"
+      },
+      "cost_per_successful_task": "0.05395490369348421052631578947",
+      "eval_success_rate": 0.7391304347826086,
+      "heldout_success_rate": 0.4,
+      "p95_latency_ms": 7049,
+      "infra_sources": [
+       "modeled"
+      ]
+     },
+     {
+      "version": 3,
+      "status": "kept",
+      "tasks": 28,
+      "eval_tasks": 23,
+      "heldout_tasks": 5,
+      "successes": 27,
+      "totals": {
+       "model_usd": "2.88676410",
+       "infra_usd": "0.0015890698336",
+       "data_usd": "0.00"
+      },
+      "cost_per_successful_task": "0.1069760433271703703703703704",
+      "eval_success_rate": 0.9565217391304348,
+      "heldout_success_rate": 1.0,
+      "p95_latency_ms": 5771,
+      "infra_sources": [
+       "modeled"
+      ]
+     }
+    ],
+    "iterations": [
+     {
+      "iteration": 1,
+      "proposal": {
+       "lever": "routing",
+       "new_value": {
+        "default_tier": "cheap",
+        "strong_if_missing_fields_gte": 2,
+        "strong_if_near_threshold": false
+       },
+       "rationale": "All 23 requests currently route to the strong model due to default_tier='strong', costing $2.33 total. The 6 easy tasks alone cost $0.73; routing them to the cheap model by defaulting to cheap and only escalating when 2+ fields are missing should cut model costs by ~40-50% with minimal accuracy risk.",
+       "predicted_cost_change_pct": -45.0,
+       "risk": "medium"
+      },
+      "decision": {
+       "approved": true,
+       "note": "auto-approved"
+      },
+      "baseline_version": 1,
+      "candidate_version": 2,
+      "candidate_summary": {
+       "n": 23,
+       "success_rate": 0.7391304347826086,
+       "cost_per_successful_task": "0.04828969526758235294117647059",
+       "totals": {
+        "model_usd": "0.81947910",
+        "infra_usd": "0.0014457195489",
+        "data_usd": "0.00"
+       },
+       "by_difficulty": {
+        "easy": {
+         "n": 6,
+         "successes": 4,
+         "cost_usd": "0.2887273340644"
+        },
+        "hard": {
+         "n": 17,
+         "successes": 13,
+         "cost_usd": "0.5321974854845"
+        }
+       },
+       "by_tier": {
+        "cheap": {
+         "n": 23,
+         "successes": 17,
+         "cost_usd": "0.8209248195489"
+        }
+       },
+       "p50_latency_ms": 3368,
+       "p95_latency_ms": 6821,
+       "cache_hit_rate": 0.0,
+       "repeat_rate": 0.2608695652173913,
+       "avg_input_tokens": 29960.782608695652,
+       "avg_output_tokens": 132.47826086956522,
+       "easy_routed_strong": 0,
+       "hard_routed_cheap_failed": 4
+      },
+      "guardrails": {
+       "passed": false,
+       "checks": [
+        {
+         "name": "eval_success",
+         "passed": false,
+         "detail": "eval_success candidate=0.7391304347826086 floor=0.9365217391304348"
+        },
+        {
+         "name": "heldout_success",
+         "passed": false,
+         "detail": "heldout_success candidate=0.4 floor=0.98"
+        },
+        {
+         "name": "p95_latency",
+         "passed": true,
+         "detail": "p95 candidate=6821 limit=7045.0"
+        }
+       ]
+      },
+      "accepted": false,
+      "reason": "guardrails failed: eval_success, heldout_success"
+     },
+     {
+      "iteration": 2,
+      "proposal": {
+       "lever": "cache_company_data",
+       "new_value": true,
+       "rationale": "The repeat_rate is 26.1% and cache_hit_rate is 0.0%, meaning roughly 6 of 23 requests are repeated company lookups that could be served from cache. Enabling caching would eliminate redundant data fetches and reduce avg_input_tokens (currently 29,961) for repeated companies, cutting both data and model costs.",
+       "predicted_cost_change_pct": -20.0,
+       "risk": "low"
+      },
+      "decision": {
+       "approved": true,
+       "note": "auto-approved"
+      },
+      "baseline_version": 1,
+      "candidate_version": 3,
+      "candidate_summary": {
+       "n": 23,
+       "success_rate": 0.9565217391304348,
+       "cost_per_successful_task": "0.1058397842097590909090909091",
+       "totals": {
+        "model_usd": "2.32716330",
+        "infra_usd": "0.0013119526147",
+        "data_usd": "0.00"
+       },
+       "by_difficulty": {
+        "easy": {
+         "n": 6,
+         "successes": 5,
+         "cost_usd": "0.7312730007822"
+        },
+        "hard": {
+         "n": 17,
+         "successes": 17,
+         "cost_usd": "1.5972022518325"
+        }
+       },
+       "by_tier": {
+        "strong": {
+         "n": 23,
+         "successes": 22,
+         "cost_usd": "2.3284752526147"
+        }
+       },
+       "p50_latency_ms": 3061,
+       "p95_latency_ms": 5771,
+       "cache_hit_rate": 0.2608695652173913,
+       "repeat_rate": 0.2608695652173913,
+       "avg_input_tokens": 29961.782608695652,
+       "avg_output_tokens": 139.82608695652175,
+       "easy_routed_strong": 6,
+       "hard_routed_cheap_failed": 0
+      },
+      "guardrails": {
+       "passed": true,
+       "checks": [
+        {
+         "name": "eval_success",
+         "passed": true,
+         "detail": "eval_success candidate=0.9565217391304348 floor=0.9365217391304348"
+        },
+        {
+         "name": "heldout_success",
+         "passed": true,
+         "detail": "heldout_success candidate=1.0 floor=0.98"
+        },
+        {
+         "name": "p95_latency",
+         "passed": true,
+         "detail": "p95 candidate=5771 limit=7045.0"
+        }
+       ]
+      },
+      "accepted": true,
+      "reason": "guardrails passed"
+     }
+    ]
+   },
+   "tasks": [
+    {
+     "version": 1,
+     "task_id": "task-0001",
+     "domain": "clerk.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 208, which is within the 50–1000 range",
+      "Latest funding stage is series_c, which is one of the allowed stages",
+      "Open roles (hiring.openings_count) is null — missing value, rule fails"
+     ],
+     "error": null,
+     "latency_ms": 5636,
+     "costs": {
+      "model_usd": "0.11011770",
+      "infra_usd": "0.0000941501879",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 32789,
+       "output_tokens": 116,
+       "latency_ms": 5610,
+       "started_offset_ms": 24
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0002",
+     "domain": "airbyte.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 110, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles (openings_count) is null — missing data, fails the rule"
+     ],
+     "error": null,
+     "latency_ms": 4005,
+     "costs": {
+      "model_usd": "0.13623060",
+      "infra_usd": "0.0000669834669",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 40717,
+       "output_tokens": 113,
+       "latency_ms": 3897,
+       "started_offset_ms": 108
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0003",
+     "domain": "modal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 231, which exceeds the maximum of 1000 — actually within range; headcount.total = 231, which is between 50 and 1000: PASS",
+      "Latest funding stage is series_c, which is one of the allowed stages: PASS",
+      "Open roles (hiring.openings_count) is null — missing value: FAIL"
+     ],
+     "error": null,
+     "latency_ms": 4404,
+     "costs": {
+      "model_usd": "0.10499940",
+      "infra_usd": "0.0000736334802",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 31098,
+       "output_tokens": 144,
+       "latency_ms": 4359,
+       "started_offset_ms": 45
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0004",
+     "domain": "linear.app",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 291, which is within the 50–1000 range",
+      "Latest funding round is 'secondary_market', not one of seed/series_a/series_b/series_c",
+      "Open roles (hiring.openings_count) is null — missing data"
+     ],
+     "error": null,
+     "latency_ms": 4098,
+     "costs": {
+      "model_usd": "0.16895670",
+      "infra_usd": "0.0000685168033",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 50579,
+       "output_tokens": 124,
+       "latency_ms": 4020,
+       "started_offset_ms": 77
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0005",
+     "domain": "langchain.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount is 429, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles count is 2, which is >= 0"
+     ],
+     "error": null,
+     "latency_ms": 3583,
+     "costs": {
+      "model_usd": "0.08675040",
+      "infra_usd": "0.0000599334528",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 25748,
+       "output_tokens": 108,
+       "latency_ms": 3449,
+       "started_offset_ms": 133
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0006",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39 (latest data point), which is below the required minimum of 50",
+      "Funding stage is series_b, which qualifies",
+      "Open roles (openings_count) is null, which disqualifies"
+     ],
+     "error": null,
+     "latency_ms": 4492,
+     "costs": {
+      "model_usd": "0.06499020",
+      "infra_usd": "0.0000750834831",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 19134,
+       "output_tokens": 112,
+       "latency_ms": 4397,
+       "started_offset_ms": 95
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0007",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39 (latest data point), which is below the required minimum of 50",
+      "Funding stage is series_b, which qualifies",
+      "Open roles (openings_count) is null, so this rule cannot be satisfied"
+     ],
+     "error": null,
+     "latency_ms": 2467,
+     "costs": {
+      "model_usd": "0.06502320",
+      "infra_usd": "0.0000413500823",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 19134,
+       "output_tokens": 114,
+       "latency_ms": 2398,
+       "started_offset_ms": 69
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0008",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39 (latest data point), which is below the required minimum of 50",
+      "Funding stage is series_b, which qualifies",
+      "Open roles (openings_count) is null, which disqualifies"
+     ],
+     "error": null,
+     "latency_ms": 3124,
+     "costs": {
+      "model_usd": "0.06499020",
+      "infra_usd": "0.0000522834375",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 19134,
+       "output_tokens": 112,
+       "latency_ms": 3057,
+       "started_offset_ms": 66
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0009",
+     "domain": "cal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 36, which is below the required minimum of 50",
+      "Funding stage is series_a, which is within the allowed stages (seed, series_a, series_b, series_c)",
+      "Open roles (openings_count) is null, so this criterion cannot be confirmed"
+     ],
+     "error": null,
+     "latency_ms": 3679,
+     "costs": {
+      "model_usd": "0.06982140",
+      "infra_usd": "0.0000615501227",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 20528,
+       "output_tokens": 126,
+       "latency_ms": 3667,
+       "started_offset_ms": 12
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0010",
+     "domain": "browserbase.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": null,
+     "reasons": [],
+     "error": "ParseError: model answer is not a valid qualification: 1 errors",
+     "latency_ms": 6602,
+     "costs": {
+      "model_usd": "0.13382490",
+      "infra_usd": "0.0001102502201",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 18919,
+       "output_tokens": 262,
+       "latency_ms": 3048,
+       "started_offset_ms": 149
+      },
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 18919,
+       "output_tokens": 281,
+       "latency_ms": 3404,
+       "started_offset_ms": 3198
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0011",
+     "domain": "modal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 231, which exceeds the maximum of 1000 — actually within range; headcount 231 is between 50 and 1000: PASS",
+      "Latest funding stage is series_c, which is one of the allowed stages: PASS",
+      "Open roles (openings_count) is null — missing value: FAIL"
+     ],
+     "error": null,
+     "latency_ms": 3124,
+     "costs": {
+      "model_usd": "0.10490040",
+      "infra_usd": "0.0000522834375",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 31098,
+       "output_tokens": 138,
+       "latency_ms": 3077,
+       "started_offset_ms": 45
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0012",
+     "domain": "n8n.io",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 1287 (latest data point 2026-09-07), which exceeds the 1000 upper bound",
+      "Latest funding round type is 'secondary_market', which is not in the allowed set (seed, series_a, series_b, series_c)",
+      "Open roles is 15, which meets the minimum requirement of 0"
+     ],
+     "error": null,
+     "latency_ms": 3307,
+     "costs": {
+      "model_usd": "0.13007940",
+      "infra_usd": "0.0000553334436",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 38713,
+       "output_tokens": 141,
+       "latency_ms": 3156,
+       "started_offset_ms": 151
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0013",
+     "domain": "clerk.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 208, which is within the 50–1000 range",
+      "Latest funding stage is series_c, which is one of the allowed stages",
+      "Open roles (hiring.openings_count) is null — missing value, rule fails"
+     ],
+     "error": null,
+     "latency_ms": 4373,
+     "costs": {
+      "model_usd": "0.11011770",
+      "infra_usd": "0.0000731001458",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 32789,
+       "output_tokens": 116,
+       "latency_ms": 4323,
+       "started_offset_ms": 49
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0014",
+     "domain": "joveo.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount is 457, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles count is 5, which is at least 0"
+     ],
+     "error": null,
+     "latency_ms": 2718,
+     "costs": {
+      "model_usd": "0.13152480",
+      "infra_usd": "0.0000455167573",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 39311,
+       "output_tokens": 109,
+       "latency_ms": 2635,
+       "started_offset_ms": 82
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0015",
+     "domain": "wati.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 291, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles (hiring.openings_count) is null — missing data, does not qualify"
+     ],
+     "error": null,
+     "latency_ms": 2837,
+     "costs": {
+      "model_usd": "0.10742490",
+      "infra_usd": "0.0000475167613",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 31978,
+       "output_tokens": 115,
+       "latency_ms": 2734,
+       "started_offset_ms": 103
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0016",
+     "domain": "abacus.ai",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 289, which is within the 50–1000 range",
+      "Latest funding stage is series_c, which is an allowed stage",
+      "Open roles (openings_count) is null — missing data, does not fit"
+     ],
+     "error": null,
+     "latency_ms": 2521,
+     "costs": {
+      "model_usd": "0.08599800",
+      "infra_usd": "0.0000422500841",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 25495,
+       "output_tokens": 113,
+       "latency_ms": 2442,
+       "started_offset_ms": 78
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0017",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39 (latest data point), which is below the required minimum of 50",
+      "Funding stage is series_b, which qualifies",
+      "Open roles (openings_count) is null, which disqualifies"
+     ],
+     "error": null,
+     "latency_ms": 3522,
+     "costs": {
+      "model_usd": "0.06499020",
+      "infra_usd": "0.0000589167841",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 19134,
+       "output_tokens": 112,
+       "latency_ms": 3512,
+       "started_offset_ms": 10
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0018",
+     "domain": "articulate.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 711, which exceeds the maximum of 1000 — passes upper bound but current total is 711, within 50–1000 range: PASS",
+      "Funding stage is series_a: PASS",
+      "Open roles (openings_count) is null — missing value: FAIL"
+     ],
+     "error": null,
+     "latency_ms": 2683,
+     "costs": {
+      "model_usd": "0.07294650",
+      "infra_usd": "0.0000449500895",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 21450,
+       "output_tokens": 131,
+       "latency_ms": 2670,
+       "started_offset_ms": 13
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0019",
+     "domain": "supabase.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 439, which is within the 50–1000 range",
+      "Latest funding stage is 'series_unknown', which is not one of seed, series_a, series_b, series_c",
+      "Open roles (openings_count) is null, so this rule cannot be satisfied"
+     ],
+     "error": null,
+     "latency_ms": 2950,
+     "costs": {
+      "model_usd": "0.14980350",
+      "infra_usd": "0.0000493834317",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 44755,
+       "output_tokens": 128,
+       "latency_ms": 2888,
+       "started_offset_ms": 62
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0020",
+     "domain": "linear.app",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 291, which is within the 50–1000 range",
+      "Latest funding round is 'secondary_market', not one of seed/series_a/series_b/series_c",
+      "Open roles (hiring.openings_count) is null, so open roles cannot be confirmed"
+     ],
+     "error": null,
+     "latency_ms": 2940,
+     "costs": {
+      "model_usd": "0.16902270",
+      "infra_usd": "0.0000492167647",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 50579,
+       "output_tokens": 128,
+       "latency_ms": 2887,
+       "started_offset_ms": 53
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0021",
+     "domain": "joveo.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount is 457, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles count is 5, which is at least 0"
+     ],
+     "error": null,
+     "latency_ms": 4186,
+     "costs": {
+      "model_usd": "0.13152480",
+      "infra_usd": "0.0000699834729",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 39311,
+       "output_tokens": 109,
+       "latency_ms": 4159,
+       "started_offset_ms": 25
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0022",
+     "domain": "zapier.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 1521, which exceeds the maximum of 1000",
+      "Funding stage is 'series_unknown', which is not one of seed, series_a, series_b, or series_c",
+      "Open roles is 9, which meets the minimum of 0"
+     ],
+     "error": null,
+     "latency_ms": 2496,
+     "costs": {
+      "model_usd": "0.11711040",
+      "infra_usd": "0.0000418334166",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 34868,
+       "output_tokens": 124,
+       "latency_ms": 2438,
+       "started_offset_ms": 57
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0023",
+     "domain": "lucidya.com",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 372, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles (openings_count) is null — missing data, company does not fit"
+     ],
+     "error": null,
+     "latency_ms": 2689,
+     "costs": {
+      "model_usd": "0.10856340",
+      "infra_usd": "0.0000450500897",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 32328,
+       "output_tokens": 114,
+       "latency_ms": 2585,
+       "started_offset_ms": 104
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0024",
+     "domain": "nelogica.com.br",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 607, which exceeds the maximum of 1000 — actually within range (50–1000); PASS",
+      "Funding stage is series_a, which is one of the allowed stages; PASS",
+      "Open roles (openings_count) is null/missing; FAIL"
+     ],
+     "error": null,
+     "latency_ms": 2765,
+     "costs": {
+      "model_usd": "0.11649660",
+      "infra_usd": "0.0000463000922",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 34662,
+       "output_tokens": 128,
+       "latency_ms": 2659,
+       "started_offset_ms": 106
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0025",
+     "domain": "sarvam.ai",
+     "split": "heldout",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount is 437, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles count is 2, which is ≥ 0"
+     ],
+     "error": null,
+     "latency_ms": 3303,
+     "costs": {
+      "model_usd": "0.08660850",
+      "infra_usd": "0.0000552667768",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 25690,
+       "output_tokens": 111,
+       "latency_ms": 3260,
+       "started_offset_ms": 43
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0026",
+     "domain": "thriveglobal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 583 (from headcount.total), which exceeds the maximum of 1000 — actually within range 50–1000, PASS",
+      "Funding stage is series_c (from funding.last_round_type), which is an allowed stage — PASS",
+      "Open roles (hiring.openings_count) is null — FAIL"
+     ],
+     "error": null,
+     "latency_ms": 2968,
+     "costs": {
+      "model_usd": "0.08778660",
+      "infra_usd": "0.0000496834323",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 25892,
+       "output_tokens": 142,
+       "latency_ms": 2911,
+       "started_offset_ms": 55
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0027",
+     "domain": "resend.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 78, which is within the 50–1000 range",
+      "Latest funding stage is series_a, which is an allowed stage",
+      "Open roles (openings_count) is null — missing data, fails rule"
+     ],
+     "error": null,
+     "latency_ms": 2429,
+     "costs": {
+      "model_usd": "0.07954650",
+      "infra_usd": "0.000040700081",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 23545,
+       "output_tokens": 112,
+       "latency_ms": 2416,
+       "started_offset_ms": 13
+      }
+     ]
+    },
+    {
+     "version": 1,
+     "task_id": "task-0028",
+     "domain": "neon.tech",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 3, which is below the required minimum of 50",
+      "Funding stage is null/missing — no qualifying funding round found",
+      "Open roles data is null/missing"
+     ],
+     "error": null,
+     "latency_ms": 2976,
+     "costs": {
+      "model_usd": "0.02633400",
+      "infra_usd": "0.0000498167659",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 7495,
+       "output_tokens": 97,
+       "latency_ms": 2972,
+       "started_offset_ms": 4
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0001",
+     "domain": "clerk.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 208, which is within the 50-1000 range ✓",
+      "Latest funding stage is series_c, which is in the allowed list ✓",
+      "Open roles count is null, which fails the requirement of at least 0 ✗"
+     ],
+     "error": null,
+     "latency_ms": 3741,
+     "costs": {
+      "model_usd": "0.03673780",
+      "infra_usd": "0.0000625667914",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 32788,
+       "output_tokens": 122,
+       "latency_ms": 3565,
+       "started_offset_ms": 175
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0002",
+     "domain": "airbyte.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 110, which is within the 50-1000 range ✓",
+      "Latest funding stage is series_b, which is in the allowed list ✓",
+      "Open roles data is missing or null ✗"
+     ],
+     "error": null,
+     "latency_ms": 4276,
+     "costs": {
+      "model_usd": "0.04540910",
+      "infra_usd": "0.0000714834759",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 40716,
+       "output_tokens": 113,
+       "latency_ms": 4100,
+       "started_offset_ms": 175
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0003",
+     "domain": "modal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 231, which exceeds the maximum of 1000 ✓",
+      "Latest funding stage is series_c, which is in the allowed list ✓",
+      "Open roles count is null/missing, which fails the requirement ✗"
+     ],
+     "error": null,
+     "latency_ms": 3326,
+     "costs": {
+      "model_usd": "0.03485020",
+      "infra_usd": "0.0000556501109",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 31097,
+       "output_tokens": 117,
+       "latency_ms": 3153,
+       "started_offset_ms": 172
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0004",
+     "domain": "linear.app",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 291 falls within 50-1000 range",
+      "Latest funding stage is secondary_market (most recent), but last primary round was series_c which qualifies",
+      "Open roles data is missing/null, but requirement is at least 0 which is satisfied"
+     ],
+     "error": null,
+     "latency_ms": 7343,
+     "costs": {
+      "model_usd": "0.05630680",
+      "infra_usd": "0.0001226002448",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 50578,
+       "output_tokens": 122,
+       "latency_ms": 7137,
+       "started_offset_ms": 205
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0005",
+     "domain": "langchain.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 429 falls within 50-1000 range",
+      "Latest funding stage is series_b, which is in the allowed list",
+      "Open roles count of 2 meets the minimum threshold of 0"
+     ],
+     "error": null,
+     "latency_ms": 3731,
+     "costs": {
+      "model_usd": "0.02892120",
+      "infra_usd": "0.0000624001244",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 25747,
+       "output_tokens": 109,
+       "latency_ms": 3715,
+       "started_offset_ms": 15
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0006",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39, which is below the minimum of 50",
+      "Latest funding stage is series_b, which qualifies",
+      "Open roles count is null/missing, cannot verify minimum of 0"
+     ],
+     "error": null,
+     "latency_ms": 3067,
+     "costs": {
+      "model_usd": "0.02160730",
+      "infra_usd": "0.0000513334356",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 19133,
+       "output_tokens": 102,
+       "latency_ms": 3045,
+       "started_offset_ms": 22
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0007",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39, which is below the minimum of 50",
+      "Latest funding stage is series_b, which qualifies",
+      "Open roles count is null/missing, cannot verify minimum of 0"
+     ],
+     "error": null,
+     "latency_ms": 2238,
+     "costs": {
+      "model_usd": "0.02160730",
+      "infra_usd": "0.0000375167413",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 19133,
+       "output_tokens": 102,
+       "latency_ms": 2220,
+       "started_offset_ms": 18
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0008",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39, which is below the minimum of 50",
+      "Latest funding stage is series_b, which qualifies",
+      "Open roles count is null/missing, cannot verify minimum of 0"
+     ],
+     "error": null,
+     "latency_ms": 2238,
+     "costs": {
+      "model_usd": "0.02160730",
+      "infra_usd": "0.0000375167413",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 19133,
+       "output_tokens": 102,
+       "latency_ms": 2227,
+       "started_offset_ms": 11
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0009",
+     "domain": "cal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 36 falls within 50-1000 range",
+      "Latest funding stage is series_a, which is in the allowed list",
+      "Open roles data is missing/null, but requirement is at least 0 (satisfied)"
+     ],
+     "error": null,
+     "latency_ms": 3811,
+     "costs": {
+      "model_usd": "0.02320120",
+      "infra_usd": "0.0000637334604",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 20527,
+       "output_tokens": 113,
+       "latency_ms": 3761,
+       "started_offset_ms": 50
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0010",
+     "domain": "browserbase.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": null,
+     "reasons": [],
+     "error": "ParseError: model answer is not a valid qualification: 1 errors",
+     "latency_ms": 6736,
+     "costs": {
+      "model_usd": "0.08951800",
+      "infra_usd": "0.0001125002246",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 18918,
+       "output_tokens": 298,
+       "latency_ms": 3210,
+       "started_offset_ms": 30
+      },
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 18919,
+       "output_tokens": 281,
+       "latency_ms": 3494,
+       "started_offset_ms": 3240
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0011",
+     "domain": "modal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 231, which exceeds the maximum of 1000 ✓",
+      "Latest funding stage is series_c, which is in the allowed list ✓",
+      "Open roles count is null/missing, which fails the requirement ✗"
+     ],
+     "error": null,
+     "latency_ms": 6821,
+     "costs": {
+      "model_usd": "0.03485020",
+      "infra_usd": "0.0001139002274",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 31097,
+       "output_tokens": 117,
+       "latency_ms": 6793,
+       "started_offset_ms": 27
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0012",
+     "domain": "n8n.io",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 1,287 falls within 50-1000 range",
+      "Latest funding stage is secondary_market, but most recent primary round is series_c which qualifies",
+      "Open roles count of 15 meets minimum threshold of 0"
+     ],
+     "error": null,
+     "latency_ms": 2789,
+     "costs": {
+      "model_usd": "0.04322120",
+      "infra_usd": "0.000046700093",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 38712,
+       "output_tokens": 116,
+       "latency_ms": 2762,
+       "started_offset_ms": 27
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0013",
+     "domain": "clerk.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 208, which is within the 50-1000 range ✓",
+      "Latest funding stage is series_c, which is in the allowed list ✓",
+      "Open roles count is null, which fails the requirement of at least 0 ✗"
+     ],
+     "error": null,
+     "latency_ms": 4090,
+     "costs": {
+      "model_usd": "0.03673780",
+      "infra_usd": "0.0000683834697",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 32788,
+       "output_tokens": 122,
+       "latency_ms": 4068,
+       "started_offset_ms": 21
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0014",
+     "domain": "joveo.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 457 falls within the 50-1000 range",
+      "Latest funding stage is series_b, which is in the allowed list",
+      "Open roles count of 5 meets the minimum threshold of 0"
+     ],
+     "error": null,
+     "latency_ms": 2649,
+     "costs": {
+      "model_usd": "0.0438460",
+      "infra_usd": "0.000044366755",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 39310,
+       "output_tokens": 110,
+       "latency_ms": 2622,
+       "started_offset_ms": 26
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0015",
+     "domain": "wati.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount 291 is within range 50-1000",
+      "Latest funding stage is series_b, which is in the allowed list",
+      "Open roles data is missing/null, but requirement is at least 0 (satisfied by default)"
+     ],
+     "error": null,
+     "latency_ms": 3693,
+     "costs": {
+      "model_usd": "0.03579620",
+      "infra_usd": "0.0000617667898",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 31977,
+       "output_tokens": 113,
+       "latency_ms": 3670,
+       "started_offset_ms": 21
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0016",
+     "domain": "abacus.ai",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 289 falls within 50-1000 range",
+      "Latest funding stage is series_c, which is in the allowed list",
+      "Open roles data is missing/null, but requirement is at least 0, so this passes"
+     ],
+     "error": null,
+     "latency_ms": 2568,
+     "costs": {
+      "model_usd": "0.02867040",
+      "infra_usd": "0.0000430167523",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 25494,
+       "output_tokens": 114,
+       "latency_ms": 2522,
+       "started_offset_ms": 45
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0017",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39, which is below the minimum of 50",
+      "Latest funding stage is series_b, which qualifies",
+      "Open roles count is null/missing, cannot verify minimum of 0"
+     ],
+     "error": null,
+     "latency_ms": 2934,
+     "costs": {
+      "model_usd": "0.02160730",
+      "infra_usd": "0.0000491167645",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 19133,
+       "output_tokens": 102,
+       "latency_ms": 2922,
+       "started_offset_ms": 10
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0018",
+     "domain": "articulate.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount 711 exceeds maximum of 1000 - PASS",
+      "Funding stage is series_a - PASS",
+      "Open roles count is null or missing - FAIL"
+     ],
+     "error": null,
+     "latency_ms": 2157,
+     "costs": {
+      "model_usd": "0.02416040",
+      "infra_usd": "0.0000361667386",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 21449,
+       "output_tokens": 103,
+       "latency_ms": 2141,
+       "started_offset_ms": 15
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0019",
+     "domain": "supabase.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 439, which exceeds the maximum of 1000 - PASS",
+      "Latest funding stage is 'series_unknown', which is not in the allowed list (seed, series_a, series_b, series_c) - FAIL",
+      "Open roles data is missing/null - FAIL"
+     ],
+     "error": null,
+     "latency_ms": 4948,
+     "costs": {
+      "model_usd": "0.04992240",
+      "infra_usd": "0.0000826834983",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 44754,
+       "output_tokens": 126,
+       "latency_ms": 4896,
+       "started_offset_ms": 51
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0020",
+     "domain": "linear.app",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 291 falls within 50-1000 range",
+      "Latest funding stage is secondary_market (most recent), but last primary round was series_c which qualifies",
+      "Open roles data is missing/null, but requirement is at least 0 which is satisfied"
+     ],
+     "error": null,
+     "latency_ms": 3205,
+     "costs": {
+      "model_usd": "0.05630680",
+      "infra_usd": "0.0000536334402",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 50578,
+       "output_tokens": 122,
+       "latency_ms": 3142,
+       "started_offset_ms": 61
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0021",
+     "domain": "joveo.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 457 falls within the 50-1000 range",
+      "Latest funding stage is series_b, which is in the allowed list",
+      "Open roles count of 5 meets the minimum threshold of 0"
+     ],
+     "error": null,
+     "latency_ms": 3368,
+     "costs": {
+      "model_usd": "0.0438460",
+      "infra_usd": "0.000056366779",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 39310,
+       "output_tokens": 110,
+       "latency_ms": 3341,
+       "started_offset_ms": 26
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0022",
+     "domain": "zapier.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount 1521 exceeds maximum of 1000",
+      "Funding stage 'series_unknown' is not in the allowed list (seed, series_a, series_b, series_c)",
+      "Open roles 9 meets minimum requirement of 0"
+     ],
+     "error": null,
+     "latency_ms": 2651,
+     "costs": {
+      "model_usd": "0.03900820",
+      "infra_usd": "0.0000444000884",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 34867,
+       "output_tokens": 119,
+       "latency_ms": 2602,
+       "started_offset_ms": 49
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0023",
+     "domain": "lucidya.com",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount 372 is within range 50-1000",
+      "Latest funding stage is series_b",
+      "Open roles data is missing/null, but requirement is at least 0 (satisfied by default)"
+     ],
+     "error": null,
+     "latency_ms": 3817,
+     "costs": {
+      "model_usd": "0.03614270",
+      "infra_usd": "0.0000638334606",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 32327,
+       "output_tokens": 106,
+       "latency_ms": 3793,
+       "started_offset_ms": 22
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0024",
+     "domain": "nelogica.com.br",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount 607 is within range 50-1000",
+      "Latest funding stage is series_a",
+      "Open roles data is missing/null, but requirement is >= 0 (satisfied by absence of negative value)"
+     ],
+     "error": null,
+     "latency_ms": 4300,
+     "costs": {
+      "model_usd": "0.03872660",
+      "infra_usd": "0.0000718834767",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 34661,
+       "output_tokens": 109,
+       "latency_ms": 4220,
+       "started_offset_ms": 79
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0025",
+     "domain": "sarvam.ai",
+     "split": "heldout",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount of 437 falls within 50-1000 range",
+      "Latest funding stage is series_b",
+      "Open roles count is 2, which meets minimum of 0"
+     ],
+     "error": null,
+     "latency_ms": 2539,
+     "costs": {
+      "model_usd": "0.02881340",
+      "infra_usd": "0.000042533418",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 25689,
+       "output_tokens": 101,
+       "latency_ms": 2466,
+       "started_offset_ms": 72
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0026",
+     "domain": "thriveglobal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 583, which exceeds the maximum of 1000 (within range)",
+      "Latest funding stage is series_c, which is in the allowed list (within range)",
+      "Open roles count is null/missing, which fails the requirement"
+     ],
+     "error": null,
+     "latency_ms": 7049,
+     "costs": {
+      "model_usd": "0.02911260",
+      "infra_usd": "0.000117700235",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 25891,
+       "output_tokens": 115,
+       "latency_ms": 6994,
+       "started_offset_ms": 54
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0027",
+     "domain": "resend.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 78, which exceeds the maximum of 1000 - PASS",
+      "Latest funding stage is series_a, which is in the allowed list - PASS",
+      "Open roles count is null/missing - FAIL"
+     ],
+     "error": null,
+     "latency_ms": 3261,
+     "costs": {
+      "model_usd": "0.02651440",
+      "infra_usd": "0.0000545667754",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-haiku",
+       "tier": "cheap",
+       "input_tokens": 23544,
+       "output_tokens": 112,
+       "latency_ms": 3246,
+       "started_offset_ms": 15
+      }
+     ]
+    },
+    {
+     "version": 2,
+     "task_id": "task-0028",
+     "domain": "neon.tech",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 3, which is below the required minimum of 50",
+      "Funding stage is null/missing — no qualifying funding round found",
+      "Open roles data is null/missing"
+     ],
+     "error": null,
+     "latency_ms": 1910,
+     "costs": {
+      "model_usd": "0.02633400",
+      "infra_usd": "0.0000320500637",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 7495,
+       "output_tokens": 97,
+       "latency_ms": 1905,
+       "started_offset_ms": 4
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0001",
+     "domain": "clerk.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 208, which is within the 50–1000 range",
+      "Latest funding stage is series_c, which is one of the allowed stages",
+      "Open roles (hiring.openings_count) is null — missing value, does not fit"
+     ],
+     "error": null,
+     "latency_ms": 3227,
+     "costs": {
+      "model_usd": "0.11013420",
+      "infra_usd": "0.0000540001076",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 32789,
+       "output_tokens": 117,
+       "latency_ms": 3203,
+       "started_offset_ms": 22
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0002",
+     "domain": "airbyte.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 110, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles (openings_count) is null — missing data, rule fails"
+     ],
+     "error": null,
+     "latency_ms": 2894,
+     "costs": {
+      "model_usd": "0.13621410",
+      "infra_usd": "0.0000484500965",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 40717,
+       "output_tokens": 112,
+       "latency_ms": 2844,
+       "started_offset_ms": 48
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0003",
+     "domain": "modal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 231, which exceeds the maximum of 1000 — actually within range; headcount 231 is between 50 and 1000: PASS",
+      "Latest funding stage is series_c, which is one of the allowed stages: PASS",
+      "Open roles (openings_count) is null — missing value: FAIL"
+     ],
+     "error": null,
+     "latency_ms": 2957,
+     "costs": {
+      "model_usd": "0.10490040",
+      "infra_usd": "0.0000495000986",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 31098,
+       "output_tokens": 138,
+       "latency_ms": 2911,
+       "started_offset_ms": 45
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0004",
+     "domain": "linear.app",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 291, which is within the 50–1000 range",
+      "Latest funding round is 'secondary_market', not one of seed/series_a/series_b/series_c",
+      "Open roles (hiring.openings_count) is null, so open roles cannot be confirmed"
+     ],
+     "error": null,
+     "latency_ms": 4178,
+     "costs": {
+      "model_usd": "0.16902270",
+      "infra_usd": "0.000069866806",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 50579,
+       "output_tokens": 128,
+       "latency_ms": 4119,
+       "started_offset_ms": 58
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0005",
+     "domain": "langchain.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount is 429, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles count is 2, which is >= 0"
+     ],
+     "error": null,
+     "latency_ms": 3414,
+     "costs": {
+      "model_usd": "0.08675040",
+      "infra_usd": "0.0000571167805",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 25748,
+       "output_tokens": 108,
+       "latency_ms": 3399,
+       "started_offset_ms": 15
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0006",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39 (latest data point), which is below the required minimum of 50",
+      "Funding stage is series_b, which qualifies",
+      "Open roles (openings_count) is null, so this rule cannot be satisfied"
+     ],
+     "error": null,
+     "latency_ms": 2537,
+     "costs": {
+      "model_usd": "0.06502320",
+      "infra_usd": "0.0000425000846",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 19134,
+       "output_tokens": 114,
+       "latency_ms": 2468,
+       "started_offset_ms": 68
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0007",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": true,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39 (latest data point), which is below the required minimum of 50",
+      "Funding stage is series_b, which qualifies",
+      "Open roles (openings_count) is null, so this rule cannot be satisfied"
+     ],
+     "error": null,
+     "latency_ms": 2414,
+     "costs": {
+      "model_usd": "0.06502320",
+      "infra_usd": "0.0000404500805",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 19134,
+       "output_tokens": 114,
+       "latency_ms": 2344,
+       "started_offset_ms": 70
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0008",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": true,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39 (latest data point), which is below the required minimum of 50",
+      "Funding stage is series_b, which qualifies",
+      "Open roles (openings_count) is null, so this rule cannot be satisfied"
+     ],
+     "error": null,
+     "latency_ms": 2506,
+     "costs": {
+      "model_usd": "0.06502320",
+      "infra_usd": "0.0000419834169",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 19134,
+       "output_tokens": 114,
+       "latency_ms": 2495,
+       "started_offset_ms": 11
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0009",
+     "domain": "cal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 36, which is below the required minimum of 50",
+      "Funding stage is series_a, which is within the allowed stages (seed, series_a, series_b, series_c)",
+      "Open roles (openings_count) is null, so this criterion cannot be confirmed"
+     ],
+     "error": null,
+     "latency_ms": 3960,
+     "costs": {
+      "model_usd": "0.06982140",
+      "infra_usd": "0.0000662167987",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 20528,
+       "output_tokens": 126,
+       "latency_ms": 3948,
+       "started_offset_ms": 12
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0010",
+     "domain": "browserbase.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": false,
+     "cache_hit": false,
+     "icp_fit": null,
+     "reasons": [],
+     "error": "ParseError: model answer is not a valid qualification: 1 errors",
+     "latency_ms": 6458,
+     "costs": {
+      "model_usd": "0.13382490",
+      "infra_usd": "0.0001078502153",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 18919,
+       "output_tokens": 262,
+       "latency_ms": 3159,
+       "started_offset_ms": 36
+      },
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 18919,
+       "output_tokens": 281,
+       "latency_ms": 3262,
+       "started_offset_ms": 3196
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0011",
+     "domain": "modal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": true,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 231, which exceeds the maximum of 1000 — actually within range; headcount 231 is between 50 and 1000: PASS",
+      "Latest funding stage is series_c, which is one of the allowed stages: PASS",
+      "Open roles (openings_count) is null — missing value: FAIL"
+     ],
+     "error": null,
+     "latency_ms": 2982,
+     "costs": {
+      "model_usd": "0.10490040",
+      "infra_usd": "0.0000499167661",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 31098,
+       "output_tokens": 138,
+       "latency_ms": 2934,
+       "started_offset_ms": 48
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0012",
+     "domain": "n8n.io",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 1287 (latest data point 2026-09-07), which exceeds the 1000 upper bound",
+      "Funding stage is 'secondary_market' (most recent round), which is not in the allowed list of seed/series_a/series_b/series_c",
+      "Open roles is 15, which meets the minimum requirement of 0"
+     ],
+     "error": null,
+     "latency_ms": 2928,
+     "costs": {
+      "model_usd": "0.13014540",
+      "infra_usd": "0.0000490167643",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 38713,
+       "output_tokens": 145,
+       "latency_ms": 2904,
+       "started_offset_ms": 24
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0013",
+     "domain": "clerk.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": true,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 208, which is within the 50–1000 range",
+      "Latest funding stage is series_c, which is one of the allowed stages",
+      "Open roles (hiring.openings_count) is null — missing value, does not fit"
+     ],
+     "error": null,
+     "latency_ms": 3986,
+     "costs": {
+      "model_usd": "0.11013420",
+      "infra_usd": "0.0000666501329",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 32789,
+       "output_tokens": 117,
+       "latency_ms": 3965,
+       "started_offset_ms": 20
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0014",
+     "domain": "joveo.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount is 457, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles count is 5, which is at least 0"
+     ],
+     "error": null,
+     "latency_ms": 3074,
+     "costs": {
+      "model_usd": "0.13152480",
+      "infra_usd": "0.0000514501025",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 39311,
+       "output_tokens": 109,
+       "latency_ms": 3032,
+       "started_offset_ms": 41
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0015",
+     "domain": "wati.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 291, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles (openings_count) is null — missing data, does not satisfy the requirement"
+     ],
+     "error": null,
+     "latency_ms": 5771,
+     "costs": {
+      "model_usd": "0.10742490",
+      "infra_usd": "0.0000964001924",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 31978,
+       "output_tokens": 115,
+       "latency_ms": 5678,
+       "started_offset_ms": 92
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0016",
+     "domain": "abacus.ai",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 289, which is within the 50–1000 range",
+      "Latest funding stage is series_c, which is one of the allowed stages",
+      "Open roles (hiring.openings_count) is null — missing value, rule fails"
+     ],
+     "error": null,
+     "latency_ms": 2709,
+     "costs": {
+      "model_usd": "0.08604750",
+      "infra_usd": "0.000045366757",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 25495,
+       "output_tokens": 116,
+       "latency_ms": 2620,
+       "started_offset_ms": 88
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0017",
+     "domain": "dagster.io",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": true,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 39 (latest data point), which is below the required minimum of 50",
+      "Funding stage is series_b, which qualifies",
+      "Open roles (openings_count) is null, which disqualifies"
+     ],
+     "error": null,
+     "latency_ms": 3038,
+     "costs": {
+      "model_usd": "0.06499020",
+      "infra_usd": "0.0000508501013",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 19134,
+       "output_tokens": 112,
+       "latency_ms": 3028,
+       "started_offset_ms": 10
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0018",
+     "domain": "articulate.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 711, which exceeds the maximum of 1000 — actually within range (50–1000); PASS",
+      "Funding stage is series_a — qualifies (seed/series_a/series_b/series_c); PASS",
+      "Open roles (hiring.openings_count) is null — missing value; FAIL"
+     ],
+     "error": null,
+     "latency_ms": 2561,
+     "costs": {
+      "model_usd": "0.0730950",
+      "infra_usd": "0.0000429000854",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 21450,
+       "output_tokens": 140,
+       "latency_ms": 2548,
+       "started_offset_ms": 13
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0019",
+     "domain": "supabase.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 439, which is within the 50–1000 range",
+      "Latest funding stage is 'series_unknown', which is not one of seed, series_a, series_b, series_c",
+      "Open roles (hiring.openings_count) is null, so open roles cannot be confirmed"
+     ],
+     "error": null,
+     "latency_ms": 3131,
+     "costs": {
+      "model_usd": "0.14983650",
+      "infra_usd": "0.0000524001044",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 44755,
+       "output_tokens": 130,
+       "latency_ms": 3027,
+       "started_offset_ms": 101
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0020",
+     "domain": "linear.app",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": true,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 291, which is within the 50–1000 range",
+      "Latest funding round type is 'secondary_market', which is not one of seed/series_a/series_b/series_c",
+      "Open roles (hiring.openings_count) is null, so open roles cannot be confirmed"
+     ],
+     "error": null,
+     "latency_ms": 4883,
+     "costs": {
+      "model_usd": "0.16907220",
+      "infra_usd": "0.0000816001628",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 50579,
+       "output_tokens": 131,
+       "latency_ms": 4789,
+       "started_offset_ms": 93
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0021",
+     "domain": "joveo.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": true,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount is 457, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles count is 5, which is at least 0"
+     ],
+     "error": null,
+     "latency_ms": 4524,
+     "costs": {
+      "model_usd": "0.13152480",
+      "infra_usd": "0.0000756168175",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 39311,
+       "output_tokens": 109,
+       "latency_ms": 4407,
+       "started_offset_ms": 116
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0022",
+     "domain": "zapier.com",
+     "split": "eval",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 1521, which exceeds the maximum of 1000",
+      "Funding stage is 'series_unknown', which is not one of seed, series_a, series_b, or series_c",
+      "Open roles is 9, which meets the minimum of 0"
+     ],
+     "error": null,
+     "latency_ms": 3061,
+     "costs": {
+      "model_usd": "0.11711040",
+      "infra_usd": "0.0000512501021",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 34868,
+       "output_tokens": 124,
+       "latency_ms": 2953,
+       "started_offset_ms": 108
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0023",
+     "domain": "lucidya.com",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 372, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles (openings_count) is null — missing data, company does not fit"
+     ],
+     "error": null,
+     "latency_ms": 2506,
+     "costs": {
+      "model_usd": "0.10856340",
+      "infra_usd": "0.0000419834169",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 32328,
+       "output_tokens": 114,
+       "latency_ms": 2483,
+       "started_offset_ms": 22
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0024",
+     "domain": "nelogica.com.br",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 607, which exceeds the maximum of 1000 — actually within range (50–1000); PASS",
+      "Funding stage is series_a — PASS",
+      "Open roles (openings_count) is null — FAIL"
+     ],
+     "error": null,
+     "latency_ms": 4317,
+     "costs": {
+      "model_usd": "0.11633160",
+      "infra_usd": "0.0000721668106",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 34662,
+       "output_tokens": 118,
+       "latency_ms": 4244,
+       "started_offset_ms": 73
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0025",
+     "domain": "sarvam.ai",
+     "split": "heldout",
+     "difficulty": "easy",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": true,
+     "reasons": [
+      "Headcount is 437, which is within the 50–1000 range",
+      "Latest funding stage is series_b, which is an allowed stage",
+      "Open roles count is 2, which is ≥ 0"
+     ],
+     "error": null,
+     "latency_ms": 2551,
+     "costs": {
+      "model_usd": "0.08660850",
+      "infra_usd": "0.0000427334184",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 25690,
+       "output_tokens": 111,
+       "latency_ms": 2475,
+       "started_offset_ms": 75
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0026",
+     "domain": "thriveglobal.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 583 (from headcount.total), which exceeds the maximum of 1000 — actually within range 50–1000, PASS",
+      "Funding stage is series_c (from funding.last_round_type), which is an allowed stage — PASS",
+      "Open roles (hiring.openings_count) is null — missing value, FAIL"
+     ],
+     "error": null,
+     "latency_ms": 3392,
+     "costs": {
+      "model_usd": "0.08783610",
+      "infra_usd": "0.0000567834465",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 25892,
+       "output_tokens": 145,
+       "latency_ms": 3317,
+       "started_offset_ms": 75
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0027",
+     "domain": "resend.com",
+     "split": "eval",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 78, which is within the 50–1000 range",
+      "Latest funding stage is series_a, which is an allowed stage",
+      "Open roles (openings_count) is null — missing data, fails rule"
+     ],
+     "error": null,
+     "latency_ms": 2574,
+     "costs": {
+      "model_usd": "0.07954650",
+      "infra_usd": "0.0000431167525",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 23545,
+       "output_tokens": 112,
+       "latency_ms": 2558,
+       "started_offset_ms": 16
+      }
+     ]
+    },
+    {
+     "version": 3,
+     "task_id": "task-0028",
+     "domain": "neon.tech",
+     "split": "heldout",
+     "difficulty": "hard",
+     "success": true,
+     "cache_hit": false,
+     "icp_fit": false,
+     "reasons": [
+      "Headcount is 3, which is below the required minimum of 50",
+      "Funding stage is null/missing — no qualifying funding round found",
+      "Open roles data is null/missing"
+     ],
+     "error": null,
+     "latency_ms": 2443,
+     "costs": {
+      "model_usd": "0.02633400",
+      "infra_usd": "0.0000409334148",
+      "data_usd": "0.00"
+     },
+     "infra_source": "modeled",
+     "calls": [
+      {
+       "model": "claude-sonnet-4.6",
+       "tier": "strong",
+       "input_tokens": 7495,
+       "output_tokens": 97,
+       "latency_ms": 2438,
+       "started_offset_ms": 5
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -3,8 +3,9 @@
 Usage (NEATLOGS_API_KEY in the environment or .env):
     uv run python scripts/smoke_neatlogs.py
 
-Then look in neatlogs for session run id printed in the log line and check that
-token fields show, neatlogs.workflow.* attributes filter, and child spans nest.
+Then open the session named in the log line and check span kinds, inputs and outputs,
+token counts, and the Passed/Blocked guardrails. The fake models are unpriced, so these
+traces carry no cost; scripts/replay_neatlogs.py re-sends a real run with its costs.
 """
 
 import logging

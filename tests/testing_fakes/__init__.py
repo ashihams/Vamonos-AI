@@ -6,7 +6,7 @@ from tests.testing_fakes.fake_clock import FixedClock, SteppingClock, TickingClo
 from tests.testing_fakes.fake_data import FakeCompanySource
 from tests.testing_fakes.fake_fixtures import InMemoryFixtureStore
 from tests.testing_fakes.fake_llm import FakeLLMClient
-from tests.testing_fakes.fake_report import RecordingReportSink
+from tests.testing_fakes.fake_report import RecordingDashboardSink, RecordingReportSink
 from tests.testing_fakes.fake_runner import FakeRunner
 from tests.testing_fakes.fake_storage import InMemoryConfigStore, InMemoryRunStore
 from tests.testing_fakes.fake_telemetry import RecordingTelemetrySink
@@ -20,6 +20,7 @@ __all__ = [
     "InMemoryFixtureStore",
     "InMemoryRunStore",
     "RecordingBudget",
+    "RecordingDashboardSink",
     "RecordingReportSink",
     "RecordingTelemetrySink",
     "ScriptedApprover",

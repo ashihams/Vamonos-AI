@@ -2,6 +2,7 @@
 
 import typer
 
+from costwise.apps.cli.commands_dashboard import dashboard
 from costwise.apps.cli.commands_eval import dry_run, eval_app
 from costwise.apps.cli.commands_fixtures import fixtures_app
 from costwise.apps.cli.commands_optimize import optimize
@@ -15,6 +16,7 @@ app.add_typer(fixtures_app, name="fixtures")
 app.command("dry-run")(dry_run)
 app.command("optimize")(optimize)
 app.command("report")(report)
+app.command("dashboard")(dashboard)
 
 
 @app.callback()

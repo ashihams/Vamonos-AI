@@ -1,6 +1,7 @@
 """End to end: the real bootstrap, fixtures on disk, .env settings, and a mocked model endpoint."""
 
 import json
+import re
 import shutil
 from decimal import Decimal
 from pathlib import Path
@@ -35,8 +36,8 @@ _ENV_NAMES = (
 )
 _PRICING = """\
 models:
-  "<cheap-model-name>": { input_per_1m_usd: "1.00", output_per_1m_usd: "2.00" }
-  "<strong-model-name>": { input_per_1m_usd: "3.00", output_per_1m_usd: "4.00" }
+  "claude-haiku": { input_per_1m_usd: "1.00", output_per_1m_usd: "2.00" }
+  "claude-sonnet-4.6": { input_per_1m_usd: "3.00", output_per_1m_usd: "4.00" }
 lambda_usd_per_gb_second: "0.0000166667"
 lambda_usd_per_request: "0.0000002"
 crustdata_usd_per_credit: "0.01"
@@ -57,7 +58,10 @@ def _write_workspace(root: Path, budget: str) -> None:
     """Write config, 32 fitting fixture companies, and a .env file under root."""
     config = root / "config"
     config.mkdir()
-    shutil.copy(_REPO_CONFIG / "policy.yaml", config)
+    policy = (_REPO_CONFIG / "policy.yaml").read_text(encoding="utf-8")
+    pinned = re.sub(r"n_requests: \d+", "n_requests: 40", policy)
+    pinned = re.sub(r"p95_multiplier: [\d.]+", "p95_multiplier: 1000.0", pinned)
+    (config / "policy.yaml").write_text(pinned, encoding="utf-8")
     shutil.copy(_REPO_CONFIG / "icp.yaml", config)
     (config / "pricing.yaml").write_text(_PRICING, encoding="utf-8")
     store = JsonFixtureStore(root / "fixtures")
@@ -122,7 +126,7 @@ def test_eval_baseline_runs_end_to_end_and_stores_results(workspace: Path) -> No
     assert route.call_count == 3
     sent = route.calls.last.request
     assert sent.headers["authorization"] == "Bearer sk-test-only"
-    assert json.loads(sent.content)["model"] == "<strong-model-name>"
+    assert json.loads(sent.content)["model"] == "claude-sonnet-4.6"
     assert (workspace / "runs" / "t1" / "results_v1.jsonl").is_file()
     assert (workspace / "runs" / "t1" / "config_v1.json").is_file()
     assert "sk-test-only" not in result.output
@@ -159,7 +163,9 @@ def test_optimize_runs_one_auto_approved_iteration_end_to_end(workspace: Path) -
         app, ["optimize", "--run-id", "o1", "--iterations", "1", "--auto-approve"]
     )
     assert result.exit_code == 0, result.output
-    assert "iteration 1: cache_company_data=true kept (guardrails passed)" in result.output
+    assert "iteration 1: cache_company_data=true kept (guardrails passed, cost per" in (
+        result.output
+    )
     assert "accepted config version: 2" in result.output
     assert route.call_count == 40 + 1 + 40
     run_dir = workspace / "runs" / "o1"

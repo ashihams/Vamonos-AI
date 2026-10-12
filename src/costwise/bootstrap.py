@@ -18,6 +18,7 @@ from costwise.adapters.llm.decorators import guarded_client
 from costwise.adapters.llm.openai_compatible import OpenAICompatibleClient
 from costwise.adapters.runners.lambda_runner import LambdaRunner
 from costwise.adapters.runners.local_runner import LocalRunner
+from costwise.adapters.storage.dashboard_file import FileDashboardSink
 from costwise.adapters.storage.file_config_store import FileConfigStore
 from costwise.adapters.storage.jsonl_run_store import JsonlRunStore
 from costwise.adapters.storage.report_files import FileReportSink
@@ -36,6 +37,7 @@ from costwise.adapters.telemetry.exporters import (
 from costwise.adapters.telemetry.null_sink import NullSink
 from costwise.adapters.telemetry.otel_sink import OtelSink
 from costwise.domain.config import OptimizerConfig
+from costwise.domain.cost import PriceBook
 from costwise.domain.icp import IcpRule
 from costwise.domain.labels import WorkloadPolicy
 from costwise.domain.task import QualificationRequest
@@ -47,6 +49,7 @@ from costwise.ports.runner import RunnerCapabilities, TaskRunner
 from costwise.ports.telemetry import TelemetrySink
 from costwise.services.baseline import BaselineService
 from costwise.services.budget import BudgetService
+from costwise.services.dashboard import DashboardService
 from costwise.services.evaluation import EvaluationInputs, EvaluationService, EvaluationSinks
 from costwise.services.fixtures import FixtureService
 from costwise.services.iteration import IterationDeciders, IterationService, IterationStores
@@ -101,6 +104,7 @@ class CliDeps:
     crustdata_source: Callable[[], AbstractContextManager[CompanyDataSource]]
     approver: Callable[[bool], Approver]
     report_service: Callable[[Path], ReportService]
+    dashboard_service: Callable[[Path, Path], DashboardService]
 
 
 def default_cli_deps() -> CliDeps:
@@ -111,6 +115,9 @@ def default_cli_deps() -> CliDeps:
         crustdata_source=open_crustdata_source,
         approver=build_approver,
         report_service=build_report_service,
+        dashboard_service=lambda runs_dir, out: DashboardService(
+            JsonlRunStore(runs_dir), FileDashboardSink(out)
+        ),
     )
 
 
@@ -151,7 +158,7 @@ def build_eval_stack(
         runner = build_lambda_runner(settings, budget)
     else:
         runner = _local_runner(store, llm, config_dir, clock)
-    telemetry = build_telemetry(settings, clock)
+    telemetry = build_telemetry(settings, clock, prices)
     runs = JsonlRunStore(settings.runs_dir)
     configs = FileConfigStore(settings.runs_dir)
     evaluation = EvaluationService(
@@ -208,13 +215,16 @@ def build_report_service(runs_dir: Path) -> ReportService:
     return ReportService(JsonlRunStore(runs_dir), FileReportSink(runs_dir))
 
 
-def build_telemetry(settings: EvalSettings, clock: Clock) -> TelemetrySink:
+def build_telemetry(
+    settings: EvalSettings, clock: Clock, prices: PriceBook | None = None
+) -> TelemetrySink:
     """Export to neatlogs when its key is set, metrics to a Collector when one is configured."""
     if settings.neatlogs_api_key is None:
         return NullSink()
     endpoint = settings.otel_collector_endpoint
     meters = collector_meter_provider(endpoint) if endpoint else None
-    return OtelSink(neatlogs_tracer_provider(settings.neatlogs_api_key), meters, clock)
+    provider = neatlogs_tracer_provider(settings.neatlogs_api_key)
+    return OtelSink(provider, meters, clock, prices)
 
 
 def build_fixture_stack(fixtures_dir: Path, config_dir: Path) -> FixtureStack:

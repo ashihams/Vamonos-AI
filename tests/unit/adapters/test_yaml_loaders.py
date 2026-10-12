@@ -19,23 +19,25 @@ _CONFIG = Path(__file__).resolve().parents[3] / "config"
 
 
 def test_example_configs_load() -> None:
-    """The checked-in examples load with placeholder prices and the default config."""
+    """The checked-in configs load with the chosen model prices and the default config."""
     prices = load_price_book(_CONFIG / "pricing.yaml")
     rule = load_icp_rule(_CONFIG / "icp.yaml")
     policy = load_guardrail_policy(_CONFIG / "policy.yaml")
     config = load_initial_config(_CONFIG / "policy.yaml")
     assert prices.lambda_usd_per_gb_second == Decimal("0.0000166667")
     assert prices.lambda_usd_per_request == Decimal("0.0000002")
-    assert prices.models["<cheap-model-name>"].input_per_1m_usd == Decimal("0.00")
+    assert prices.models["claude-haiku"].input_per_1m_usd == Decimal("1.10")
+    assert set(prices.models) == {config.cheap_model, config.strong_model}
     assert rule.min_employees == 50
     assert "series_a" in rule.allowed_stages
     assert policy.max_success_drop_pp == 2.0
+    assert policy.min_saving_pct == 1.0
     assert config.routing.default_tier is ModelTier.STRONG
     assert config.payload_fields is None
     assert config.lambda_memory_mb == 1024
     assert config.cache_company_data is False
     workload = load_workload_policy(_CONFIG / "policy.yaml")
-    assert workload.n_requests == 40
+    assert workload.n_requests == 28
     assert workload.repeat_ratio == 0.25
     assert workload.heldout_count == 8
     assert workload.seed == 42

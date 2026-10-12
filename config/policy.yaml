@@ -2,10 +2,11 @@ guardrails:
   max_success_drop_pp: 2.0
   p95_multiplier: 1.25
   budget_stop_fraction: 0.8
+  min_saving_pct: 1.0
 initial_config:
   version: 1
-  cheap_model: "<cheap-model-name>"
-  strong_model: "<strong-model-name>"
+  cheap_model: "claude-haiku"
+  strong_model: "claude-sonnet-4.6"
   routing:
     default_tier: strong
     strong_if_missing_fields_gte: 0
@@ -15,7 +16,7 @@ initial_config:
   cache_company_data: false
   lambda_memory_mb: 1024
 workload:
-  n_requests: 40
+  n_requests: 28
   repeat_ratio: 0.25
   heldout_count: 8
   seed: 42

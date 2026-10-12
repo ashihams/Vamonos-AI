@@ -31,7 +31,7 @@ _REPO_CONFIG = Path(__file__).resolve().parents[2] / "config"
 def test_fixture_stack_reads_rule_and_workload(tmp_path: Path) -> None:
     """The fixture stack loads the ICP rule and workload settings from config files."""
     stack = build_fixture_stack(tmp_path, _REPO_CONFIG)
-    assert stack.workload.n_requests == 40
+    assert stack.workload.n_requests == 28
     assert stack.rule.max_employees == 1000
     assert default_cli_deps().fixture_stack is build_fixture_stack
 
@@ -49,6 +49,15 @@ def test_report_service_reads_and_writes_the_runs_directory(tmp_path: Path) -> N
         "trajectory.mmd",
     ]
     assert default_cli_deps().report_service is build_report_service
+
+
+def test_dashboard_service_reads_runs_and_writes_the_chosen_file(tmp_path: Path) -> None:
+    """The wired dashboard service exports a stored run to the given JSON path."""
+    JsonlRunStore(tmp_path).save_results("r1", 1, version_results(1, "0.01", (True,) * 4))
+    out = tmp_path / "site" / "dashboard.json"
+    exported = default_cli_deps().dashboard_service(tmp_path, out).export(["r1"])
+    assert (exported.location, exported.tasks) == (out.as_posix(), 4)
+    assert out.is_file()
 
 
 def test_crustdata_source_reads_the_key_from_env_file(

@@ -16,7 +16,7 @@ Published handle: GitHub `ashihams`. No other name or teammate has been chosen f
 
 Used in the repository now: Python 3.12, uv, pydantic, pydantic-settings, PyYAML, httpx, tenacity, local JSON/JSONL files, and the Crustdata company enrich API.
 
-Planned, not integrated: neatlogs, Entire, cfo.ai, LiteLLM, and AWS Lambda. `config/pricing.yaml` and `config/icp.yaml` still hold the placeholder values from the build spec.
+In use since 2026-10-12: the LiteLLM proxy (`claude-haiku`, `claude-sonnet-4.6`), neatlogs traces over OpenTelemetry, and Entire checkpoints. cfo.ai holds the business model, built in its chat from `cfo_inputs.json` (no code integration). AWS Lambda is not deployed (code done).
 
 ## Build log
 
@@ -166,16 +166,129 @@ Committed on its own branch, `feat/report`, stacked on the Stage 10 branch. No r
 
 `make check` exited 0. pytest: 341 passed. Overall coverage 99.88%; domain and services at 100%. Golden-file tests pin all four files for a fixed run (one change kept, one rolled back, one declined). The end-to-end CLI test now runs `report` after `optimize` against a mocked model endpoint.
 
-Planned and not started: the cfo.ai model, the business plan, and the demo.
+### 2026-10-12 — Stage 12 docs and v0.1.0
+
+Committed on its own branch, `feat/release`, stacked on the Stage 11 branch, and tagged `v0.1.0` locally. Stage 10 and 11 are open as stacked pull requests #11 and #12.
+
+- README rewritten: what costwise is, the metric, an architecture diagram in Mermaid, quickstart, the demo command sequence, and limitations (modeled data cost, frozen fixtures, rule-based labels, small infra lever, placeholder prices, no live run yet).
+- `docs/architecture.md`: layers and the import rules that enforce them, a table of ports and adapters, and step-by-step guides for adding a lever or a runner.
+- `docs/open-verifications.md` now opens with a status table. All nine open items are still open; only the Crustdata endpoint check is done.
+- `scripts/dry_run.py` runs the 5-task budget check.
+- Removed the unused all-in-one `Settings` class; its tests now cover `EvalSettings`, which the CLI uses.
+- History scan for secrets (counts only, values never printed): no API-key, AWS-key, private-key, or bearer-token patterns. Two `LITELLM_LICENSE=` lines in tests are placeholders (`unrelated`, `unrelated-value`) that check unrelated `.env` keys are ignored. No `.env`, raw fixture, or sample file was ever committed. The spec still asks the builder to run their own `git log -p` check.
+
+`make check` exited 0. pytest: 343 passed. Overall coverage 99.88%; domain and services at 100%. A fresh clone of the commit passed `make install && make check` with no `.env` and no raw fixtures. In that clone, `costwise --help` listed every command, and `scripts/dry_run.py` without keys exited 2 naming the missing settings.
+
+### 2026-10-12 — LiteLLM key claimed, models and prices set
+
+- The team key is in the local `.env`, which is gitignored. The proxy's model list and model info calls returned 200; no completion call has been made yet.
+- Builder's choice: `claude-haiku` (cheap) and `claude-sonnet-4.6` (strong). The proxy maps them to Bedrock Claude Haiku 4.5 and Claude Sonnet 4.6.
+- `config/pricing.yaml` uses the proxy's own rates: 1.10 / 5.50 and 3.30 / 16.50 USD per 1M input / output tokens. These are 10% above Anthropic's list prices.
+- Builder's choice: the Crustdata price per credit stays `0.00`, because data was free under the hackathon credits. The report must say so.
+
+`make check` exited 0. pytest: 343 passed.
+
+First live run: `scripts/dry_run.py --iterations 1`. All 5 of 5 tasks succeeded on `claude-sonnet-4.6`, with the full company payload of 25,748 to 50,579 input tokens per task. Model cost was 0.607 USD, about 0.121 per task. Infra cost was 0.0003 USD, modeled locally. Data cost was 0, by choice. The projected cost of a 40-task baseline plus one iteration (80 tasks) is 9.71 USD. That is more than half of the 9.39 USD left under `MODEL_BUDGET_USD=10`, so the dry run refused (exit 1), as designed.
+
+Builder's choice after the refusal: shrink the workload to 28 requests (23 evaluation, 5 held-out) and set `MODEL_BUDGET_USD=15`. The contract tests now pin their own 40-request workload, so tuning the real config cannot break them. `make check` exited 0 (343 passed).
+
+- Second dry run (`--iterations 1 --run-id dry-run-2`): all 5 of 5 succeeded, 0.608 USD. The projected cost of 56 tasks is 6.80 USD, within half of the 14.39 left. Passed.
+- Live baseline (`eval baseline --run-id demo`): 28 tasks, all on `claude-sonnet-4.6` with the full payload.
+  - Success: 27. Evaluation 22 of 23 (95.7%); held-out 5 of 5 (100%).
+  - The miss, `task-0010`, returned an invalid answer on the first try and on the retry (`ParseError`).
+  - Cost: model 2.887 USD, infra 0.0015 USD (modeled), data 0. Total 2.888 USD, so about 0.107 USD per successful task.
+  - Input tokens per call ranged from 7,495 to 50,579; output never exceeded 281.
+- Spent on the shared key so far (costwise's own accounting at the proxy's rates): about 4.10 USD.
+
+First live optimize iteration (`optimize --run-id demo --iterations 1 --auto-approve`, builder's choice to auto-approve):
+
+- The model proposer suggested routing to `claude-haiku` by default, escalating to Sonnet when 2 or more fields are missing or the company is near a threshold. It predicted a 35% saving, at medium risk.
+- Version 2 ran 27 of 28 tasks on Haiku. Model cost fell from 2.887 to 1.023 USD, and cost per successful task fell from 0.107 to 0.054 USD.
+- Quality fell: evaluation success 17 of 23 (73.9%, floor 93.7%), held-out 2 of 5 (40%, floor 98%). Both success guardrails failed, so the change was rolled back and v1 stays accepted. The p95 check passed (5,662 ms against a 6,139 ms limit).
+- This is the guardrails working on real data: the cheap model halves the unit cost, but loses too many correct answers.
+
+`costwise report --run-id demo` wrote `runs/demo/report/`. The report now explains that zero data cost means the hackathon Crustdata credits were free; a test covers this, and `make check` passed (344 tests). Spent on the shared key: about 5.1 USD, plus one proposer call.
+
+Second live run (`optimize --run-id demo-2 --iterations 2 --auto-approve`, builder's choice), with a fresh baseline:
+
+- Baseline v1 nearly matched the first run: 27 of 28 tasks, 2.886 USD in model cost, 0.107 USD per successful task.
+- Iteration 1: the model proposer suggested Haiku routing again (escalating on 2 or more missing fields), predicting a 45% saving. Rejections are remembered only within a run, so this repeated the change rejected in `demo`. The result was the same: evaluation 73.9%, held-out 40%, rolled back. It cost 1.02 USD.
+- Iteration 2: the proposer suggested turning on the company-data cache, predicting a 20% saving. All guardrails passed (evaluation 95.7%, held-out 100%, p95 5,771 against a 7,045 ms limit), so v3 was kept.
+- **The kept cache change saved nothing:** 0.106967 to 0.106976 USD per successful task. The cache only avoids Crustdata credits, which are priced at 0.00, and it does not shrink what is sent to the model. The proposer's claim that caching would reduce input tokens was wrong. The loop keeps any change that passes the guardrails; it does not require a saving. This is a design gap to raise, not hide.
+- Spent on the shared key so far: about 11.9 USD by costwise's accounting (baseline 2.89, v2 1.02, v3 2.89, plus two proposer calls, on top of the earlier 5.1). About 8 USD is left.
+
+Evidence from both runs is in `evidence/demo-2026-10-12/` and `evidence/demo-2-2026-10-12/`.
+
+### 2026-10-12 — Fixes from the live runs: require a saving, remember rejections
+
+Builder's choice after `demo-2`: fix both gaps it exposed. No paid calls were made for this.
+
+- A change is now kept only if the guardrails pass **and** cost per successful task (both splits) drops by at least `min_saving_pct`, set to 1% in `config/policy.yaml`. Otherwise it is rolled back with "guardrails passed but no saving". Under this rule the `demo-2` cache change (0.106967 to 0.106976 USD) would have been rolled back.
+- Rejected proposals are now remembered across runs. Before proposing, `optimize` collects non-accepted proposals from other runs whose version-1 config matches this run's. Both proposers see them, and an exact repeat is dropped. A near-duplicate, such as the same routing with a different threshold, is only discouraged through the prompt, not blocked.
+- New tests cover the saving rule, cross-run memory, and `RunStore.run_ids`. The integration fake now responds to the output cap and Lambda memory, so those levers change cost in tests.
+
+`make check` exited 0. pytest: 353 passed.
+
+### 2026-10-12 — neatlogs key claimed, smoke traces sent
+
+- The neatlogs key is in the local `.env` (gitignored).
+- `scripts/smoke_neatlogs.py` sent one fake task trace and one fake iteration trace as session `smoke-1791796161019`, with no exporter errors.
+- Dashboard check by the builder: both traces arrived at 2:39 PM IST. The iteration trace shows `optimizer_iteration`, with `guardrail eval_success` and a failed `guardrail heldout_success` (ERROR) under it, ending with error "smoke failure". neatlogs flags that trace "Execution Failed". The task trace, with its token counts and model-call spans, has not been opened yet.
+- Builder's choice: no more paid model runs. The cfo.ai model will use the measured numbers already in `evidence/`. Those show no cost saving: the only cheaper change, Haiku routing, was rolled back for losing quality.
+
+### 2026-10-12 — Entire enabled, build notes checkpointed
+
+- Entire CLI 0.11.4, built with `go install` because the PowerShell installer got HTTP 403 from the GitHub API. `entire enable --agent cursor`, with telemetry off and local redaction rules for the model and neatlogs keys. Past chats were not imported, because they contain keys.
+- Builder's choice: instead of rebuilding the repo, a new Cursor chat wrote one build-notes file per stage PR (`docs/build-notes/stage-*.md`) from `hackathon.md`, the git log, and the chat history. Each file says on its first line that it was written after the stage was built.
+- Entire's Cursor hooks did not fire, since its log shows no hook calls. The chat was linked to each notes commit with `entire session attach --agent cursor --force`. All 13 notes commits carry `Entire-Checkpoint: 01M4QYRRBQ1DCFT4WRZ808FXGW`, one checkpoint for the one chat that wrote them.
+- Before pushing, the checkpoint and all notes commits were scanned for keys, `.env` lines, and personal-data patterns: none found.
+- Pushed. `refs/entire/checkpoints/GW/01M4QYRRBQ1DCFT4WRZ808FXGW` is on GitHub. After the builder installed the Entire GitHub App, the repo was mirrored, and the checkpoint shows publicly at [entire.io/gh/ashihams/Vamonos-AI/commit/68602e8](https://entire.io/gh/ashihams/Vamonos-AI/commit/68602e828e325879ab67cbc76637e4f4676a0a7f).
+
+### 2026-10-12 — cfo.ai economics and business plan
+
+- Shared model: [app.cfo.ai/s/nBLdLr1K8qA0Jnd3](https://app.cfo.ai/s/nBLdLr1K8qA0Jnd3), "costwise — Economics & business plan", built in cfo.ai's chat from `evidence/demo-2-2026-10-12/cfo_inputs.json`.
+- Measured inputs: run `demo-2`, 27 of 28 tasks successful, 0.106967 versus 0.106976 USD per success (no saving). Model cost is measured tokens times configured prices, infrastructure is modeled, and data was credit-funded.
+- Builder's assumptions, labeled as such in the model: 0.50 USD per delivered qualification (including "does not fit" answers), 5,000 / 25,000 / 100,000 per month, and 200 USD fixed monthly costs.
+- cfo.ai's results: gross profit 0.393 USD per qualification. Unit gross profit stays positive only while Crustdata costs less than 0.1965 USD per credit, at two credits per lookup. The rejected Haiku routing (about 0.054 USD per success, 40% held-out accuracy) is shown as an unshipped counterfactual.
+- cfo.ai notes the held-out sample size as "not provided". It was 5 tasks, and the evaluation set 23.
+
+### 2026-10-12 — neatlogs spans rebuilt on the SDK's attribute names
+
+- Why: in the smoke run, every span showed as type CHAIN, the INPUT and OUTPUT columns were empty, and guardrails had no Passed/Blocked label. costwise had been sending its own attribute names.
+- Source: the neatlogs Python SDK 1.4.26 wheel from PyPI, file `neatlogs/config/attribute-mapping.json`, which lists the attribute names the backend reads. The SDK itself is not a dependency; spans are still built with OpenTelemetry.
+- Task traces: the task is a `workflow` root, with `neatlogs.session.id` = run id, `neatlogs.end_user.id` = company domain, and JSON input and output. Under it are:
+  - a `tool` span for the company lookup;
+  - one `llm` span per model call, carrying model, provider, token counts, and `cost_usd` from `config/pricing.yaml`;
+  - an `evaluator` span for the label score.
+- Iteration traces: the iteration is an `agent` root, with the proposal as input and the decision as output. Under it are:
+  - a `guardrail` span for the human approval;
+  - an `evaluator` span with the candidate's results;
+  - one `guardrail` span per check, with `neatlogs.guardrail.passed` as a boolean.
+- New `scripts/replay_neatlogs.py` re-sends stored runs without model calls. It sent `demo` (56 task traces, 1 iteration) and `demo-2` (84 task traces, 2 iterations) with no exporter errors. Task spans keep their recorded start times; iteration spans are stamped at replay time.
+- The end-to-end optimize test was flaky under coverage: with a mocked model, baseline p95 is a few milliseconds, so the 1.25× latency guardrail tripped on scheduler noise. That test's own workspace now sets `p95_multiplier: 1000.0`; `config/policy.yaml` is unchanged.
+- `make check` exited 0. pytest: 358 passed, total coverage 99.89%.
+- Dashboard check of the rebuilt traces: not done yet.
+
+### 2026-10-12 — results dashboard
+
+- New `costwise dashboard` command, behind a `DashboardSink` port, writes the stored runs to `dashboard/public/data/dashboard.json`. It exported `demo` and `demo-2`: 2 runs, 140 task results. No new model calls.
+- `dashboard/` is a static Vite + React + TypeScript + Tailwind + Framer Motion site in a dark "Linear"-style theme. Sections: an overview with the cost-per-success trajectory, the iteration timeline (proposal, reasoning, approval, predicted versus measured change, guardrails), the version table, a filterable task table with per-call costs, the sponsor stack, and the method notes saying what is measured and what is modeled.
+- Every number on the page comes from the exported file. The Lambda tile says "Runner built, not deployed".
+- Checked in a desktop browser: all sections render, rows expand, the run switch works. Phone-width layout not checked in a browser.
+- `npm run build` passed. `make check` exited 0: 367 passed, total coverage 99.89%.
+
+- Deployed on the builder's instruction to Vercel production: [dashboard-ten-beryl-63.vercel.app](https://dashboard-ten-beryl-63.vercel.app). The page and `/data/dashboard.json` both returned HTTP 200 without a login.
+
+Planned and not started: the dashboard check of the rebuilt traces, the Lambda deploy, and the demo video.
 
 ## Demo
 
-No demo URL. Nothing has been deployed or submitted.
+Results dashboard: [dashboard-ten-beryl-63.vercel.app](https://dashboard-ten-beryl-63.vercel.app), a static site showing the recorded runs `demo` and `demo-2`. Nothing has been submitted.
 
 ## Known limitations and next steps
 
-- Model names and prices are placeholders. Lambda and Crustdata prices in the example file are the spec placeholders, not a verified bill.
-- neatlogs, Entire, and cfo.ai are not connected. `entire enable` has not been run. There is no business plan yet.
+- Model prices are the LiteLLM proxy's own rates. Lambda prices are unverified, and Crustdata data is priced at 0 because the hackathon credits were free.
+- The cfo.ai model rests on one 28-task run and on the builder's price and volume assumptions. Entire covers only the build-notes commits, not the original build sessions.
 - One defensive branch, a validation error with no field location, has no test.
 - 39 fixture companies, of which 8 fit the ICP. Always answering "not a fit" would score about 79%. The workload is 40 requests rather than the spec's 60.
 - A full enrich payload is about 230 KB per company. Sending it whole to a model would be expensive, so payload trimming matters in later stages.

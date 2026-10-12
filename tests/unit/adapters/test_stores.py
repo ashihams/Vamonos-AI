@@ -61,6 +61,16 @@ def test_results_and_iterations_round_trip(tmp_path: Path) -> None:
     assert store.load_iterations("run-1") == [first, second]
 
 
+def test_run_ids_lists_only_runs_with_iterations(tmp_path: Path) -> None:
+    """Runs with an iterations file are listed in order; results-only runs are not."""
+    store = JsonlRunStore(tmp_path / "runs")
+    assert store.run_ids() == []
+    store.save_results("baseline-only", 1, [])
+    store.save_iteration("b-run", _iteration())
+    store.save_iteration("a-run", _iteration())
+    assert store.run_ids() == ["a-run", "b-run"]
+
+
 def test_config_round_trip_keeps_payload_fields(tmp_path: Path) -> None:
     """A config with payload fields reloads as the same model."""
     store = FileConfigStore(tmp_path)

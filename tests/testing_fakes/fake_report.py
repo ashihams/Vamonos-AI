@@ -14,3 +14,16 @@ class RecordingReportSink:
         """Keep a copy of the files and return a fake location."""
         self.reports[run_id] = dict(files)
         return f"memory://{run_id}/report"
+
+
+class RecordingDashboardSink:
+    """Remember every dashboard document written."""
+
+    def __init__(self) -> None:
+        """Start with no documents."""
+        self.bodies: list[str] = []
+
+    def write(self, body: str) -> str:
+        """Keep the document and return a fake location."""
+        self.bodies.append(body)
+        return "memory://dashboard.json"

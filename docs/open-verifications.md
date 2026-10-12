@@ -1,5 +1,20 @@
 # Open verifications
 
+Status as of 2026-10-12. Live model calls and the neatlogs dashboard are partly checked, as noted per item. Nothing has been checked against AWS.
+
+| Item | Kind | Status | Who closes it |
+| --- | --- | --- | --- |
+| Crustdata credits per enrich call | code marker | Open: docs say 2 credits; the dashboard charge is unchecked | builder |
+| LiteLLM accepts `max_tokens` and returns `usage` | code marker | Partly done: Sonnet returns `usage`; Haiku and the token cap are unchecked | the first optimize run |
+| neatlogs span attributes render as intended | manual | Names now taken from the neatlogs SDK's attribute map; the dashboard view after the rewrite is unchecked | builder |
+| Lambda Tail log ends with the REPORT line | code marker | Open: not deployed | builder, after `make lambda-deploy` |
+| Lambda deployment | manual | Not run; the zip builds locally | builder |
+| neatlogs smoke check | manual | Partly done: traces arrive and nest; rerun after the attribute rewrite | builder |
+| Collector image and file output | config | Open: image not pinned, file write untested | builder |
+| Model names and per-token prices | config | Done 2026-10-12: `claude-haiku` and `claude-sonnet-4.6` at the proxy's rates | — |
+| Crustdata USD price per credit | config | Open: `0.00` placeholder; needs a stated assumption | builder |
+| Crustdata endpoint, headers, and field mapping | checked | Done 2026-10-11 against the docs and one live call | — |
+
 ## TODO(VERIFY: Crustdata credits charged per company enrich call)
 
 - Where: `src/costwise/adapters/data/crustdata_client.py`, `CREDITS_PER_ENRICH = Decimal(2)`.
@@ -10,13 +25,22 @@
 
 - Where: `src/costwise/adapters/llm/openai_compatible.py`.
 - Source so far: the neatHack models page gives the base URL `https://litellm.vision.aivar.app/v1`, Bearer auth, the OpenAI-compatible `/chat/completions` route, and reads `choices[0].message.content`. The client also sends `max_tokens` and `temperature` and reads `usage.prompt_tokens` and `usage.completion_tokens`, as the build spec requires.
-- Still unchecked: no live call yet, because the team key has not been claimed. Confirm one Nova and one Claude call return `usage`, and that `max_tokens` is honored.
+- 2026-10-12: the team key works. `GET /v1/models` and `GET /v1/model/info` returned 200 and list all seven models.
+- 2026-10-12 dry run: 5 `claude-sonnet-4.6` calls returned `usage` (25,748 to 50,579 input tokens, 108 to 138 output tokens).
+- Still unchecked: a `claude-haiku` call, and whether `max_tokens` is honored. No output came near the 512-token cap.
 
-## TODO(VERIFY: neatlogs renders neatlogs.guardrail.passed on plain OTLP spans as Passed/Blocked)
+## neatlogs span attributes (manual, not a code marker)
 
-- Where: `src/costwise/adapters/telemetry/attributes.py`, `GUARDRAIL_PASSED`, set on each guardrail child span of an iteration span.
-- Source so far: the build spec names the attribute. The span status is also set to OK or ERROR, so the outcome shows even if neatlogs ignores the attribute.
-- Check: run `scripts/smoke_neatlogs.py` and look at the `guardrail heldout_success` span, which is a failed check.
+- Where: `src/costwise/adapters/telemetry/attributes.py`, `task_spans.py`, `iteration_spans.py`.
+- 2026-10-12 smoke run, as seen by the builder on the dashboard: every span showed as type CHAIN, the INPUT and OUTPUT columns were empty, and a failed guardrail showed only through its ERROR status, with no Passed/Blocked label.
+- Cause: costwise sent its own attribute names. The neatlogs Python SDK 1.4.26 (PyPI wheel, `neatlogs/config/attribute-mapping.json`) defines the names the backend reads:
+  - `neatlogs.span.kind`, lowercase (`workflow`, `agent`, `llm`, `tool`, `guardrail`, `evaluator`, ...);
+  - `neatlogs.<kind>.input` and `neatlogs.<kind>.output`;
+  - `neatlogs.llm.model_name`, `.provider`, `.token_count.prompt|completion|total`, `.cost_usd`;
+  - `neatlogs.session.id`, `neatlogs.end_user.id`, `neatlogs.end_user.metadata` on the root span;
+  - `neatlogs.guardrail.passed` as a boolean, plus `.name` and `.reason`.
+- Change: spans now use those names. Each task is a `workflow` trace with a `tool` span for the company lookup, one `llm` span per model call, and an `evaluator` span for the label score. Each optimizer iteration is an `agent` trace with a `guardrail` span for the human approval, an `evaluator` span for the candidate run, and one `guardrail` span per check. All traces of a run share `neatlogs.session.id` = run id. `neatlogs.end_user.id` is the company domain being qualified, so the Users view lists companies, not people.
+- Still unchecked: that the dashboard shows the kinds, inputs and outputs, Passed/Blocked, sessions, users, and cost after this change. Check: run `scripts/smoke_neatlogs.py` or `scripts/replay_neatlogs.py --run-id demo`.
 
 ## TODO(VERIFY: the Tail log of a text-format python3.12 function ends with this REPORT line)
 
@@ -33,23 +57,23 @@
 ## neatlogs smoke check (manual, not a code marker)
 
 - Source: neatlogs engineers, as recorded in the build spec, gave OTLP over gRPC at `ingest.neatlogs.com:443` with TLS and the `x-api-key` header. Only `neatlogs.workflow.*`, `neatlogs.session.*`, and `neatlogs.end_user.id` are filterable.
+- 2026-10-12, session `smoke-1791796161019`: both traces arrived at 2:39 PM IST under the `costwise` service. The iteration trace nests its two guardrail spans, as described above.
+- The `gen_ai.*` token fields from that run were replaced by `neatlogs.llm.*`; see "neatlogs span attributes" above.
 - Still unchecked:
-  - whether the smoke trace arrives;
-  - whether `gen_ai.usage.*` token fields show;
   - whether `neatlogs.workflow.*` attributes filter;
-  - whether the two model-call spans nest under the task span;
-  - whether numeric cost attributes keep their values.
+  - whether the model-call spans nest under the task span;
+  - whether `neatlogs.llm.cost_usd` feeds the cost analytics.
 
 ## Collector image and file output (config, not a code marker)
 
 - Where: `infra/collector/docker-compose.yaml` uses `otel/opentelemetry-collector-contrib:latest`, which is not pinned. Pin a tag once one is confirmed to work.
 - Not yet run: whether the container can write `/data/telemetry.jsonl` on the mounted folder, since the image may not run as root.
 
-## Model names and per-token prices (config values, not code markers)
+## Model names and per-token prices (config values, done 2026-10-12)
 
-- Where: `config/pricing.yaml` and `config/policy.yaml` still hold `<cheap-model-name>`, `<strong-model-name>`, and `"0.00"` prices.
-- Available on the shared key (models page, 2026-10-12): `nova-micro`, `nova-lite`, `nova-pro`, `nova-2-lite`, `claude-haiku`, `claude-sonnet-4.6`, `claude-opus-4.6`. The page publishes no prices.
-- Waiting on the builder to pick the cheap and strong pair and the price source.
+- Builder's choice: `claude-haiku` as the cheap model and `claude-sonnet-4.6` as the strong model, in `config/policy.yaml`.
+- Source: the proxy's `GET /v1/model/info`, which reports the rates it charges against the team key. `claude-haiku` maps to `bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0` at 1.10 / 5.50 USD per 1M input / output tokens. `claude-sonnet-4.6` maps to `bedrock/us.anthropic.claude-sonnet-4-6` at 3.30 / 16.50.
+- Cross-check: [Anthropic's pricing page](https://docs.anthropic.com/en/docs/about-claude/pricing) lists Haiku 4.5 at 1 / 5 and Sonnet 4.6 at 3 / 15, so the proxy's rates are 10% higher. The AWS Bedrock pricing page did not render its current tables to a static fetch.
 
 ## Crustdata USD price per credit (config value, not a code marker)
 

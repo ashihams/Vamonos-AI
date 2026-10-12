@@ -27,6 +27,10 @@ class RunStore(Protocol):
         """Return iteration records in append order."""
         ...
 
+    def run_ids(self) -> list[str]:
+        """Return the ids of runs that have iteration records, sorted."""
+        ...
+
 
 class ConfigStore(Protocol):
     """Persists optimizer configs by run and version."""
