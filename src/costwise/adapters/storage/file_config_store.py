@@ -6,7 +6,7 @@ from pydantic import ValidationError
 
 from costwise.adapters.storage.paths import require_version, run_directory
 from costwise.domain.config import OptimizerConfig
-from costwise.domain.errors import CostwiseError
+from costwise.domain.errors import CostwiseError, MissingStoreError
 
 
 class FileConfigStore:
@@ -26,7 +26,7 @@ class FileConfigStore:
         """Return the config saved for this run and version."""
         path = self._path(run_id, version)
         if not path.is_file():
-            raise CostwiseError(f"missing store file: {path.name}")
+            raise MissingStoreError(f"missing store file: {path.name}")
         try:
             return OptimizerConfig.model_validate_json(path.read_text(encoding="utf-8"))
         except ValidationError as exc:

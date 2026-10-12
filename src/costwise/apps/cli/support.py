@@ -1,6 +1,7 @@
 """Shared CLI helpers: dependency lookup, error handling, and report lines."""
 
-from collections.abc import Iterator
+import json
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 
 import typer
@@ -9,6 +10,7 @@ from pydantic import ValidationError
 from costwise.bootstrap import CliDeps
 from costwise.domain.config import Lever
 from costwise.domain.errors import CostwiseError
+from costwise.domain.proposals import IterationRecord
 from costwise.domain.task import InfraCostSource
 from costwise.ports.runner import RunnerCapabilities
 from costwise.services.baseline import PlanProjection, RunReport
@@ -62,6 +64,28 @@ def capability_lines(capabilities: RunnerCapabilities) -> list[str]:
     if modeled and Lever.LAMBDA_MEMORY not in capabilities.levers:
         return [MODELED_INFRA_NOTE]
     return []
+
+
+def iteration_lines(records: Sequence[IterationRecord], start_version: int) -> list[str]:
+    """Return one line per iteration and the config version that ended up accepted."""
+    lines: list[str] = []
+    accepted_version = start_version
+    for record in records:
+        change = f"{record.proposal.lever.value}={json.dumps(record.proposal.new_value)}"
+        lines.append(f"iteration {record.iteration}: {change} {_outcome(record)} ({record.reason})")
+        if record.accepted and record.candidate_version is not None:
+            accepted_version = record.candidate_version
+    if not records:
+        lines.append("no iterations ran")
+    lines.append(f"accepted config version: {accepted_version}")
+    return lines
+
+
+def _outcome(record: IterationRecord) -> str:
+    """Return what happened to the proposal in a few words."""
+    if not record.decision.approved:
+        return "declined"
+    return "kept" if record.accepted else "rolled back"
 
 
 def projection_lines(projection: PlanProjection) -> list[str]:

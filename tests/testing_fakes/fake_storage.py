@@ -3,7 +3,7 @@
 from collections.abc import Sequence
 
 from costwise.domain.config import OptimizerConfig
-from costwise.domain.errors import CostwiseError
+from costwise.domain.errors import MissingStoreError
 from costwise.domain.proposals import IterationRecord
 from costwise.domain.task import TaskResult
 
@@ -25,7 +25,7 @@ class InMemoryRunStore:
         try:
             saved = self._results[(run_id, version)]
         except KeyError as exc:
-            raise CostwiseError("missing store file: results") from exc
+            raise MissingStoreError("missing store file: results") from exc
         return list(saved)
 
     def save_iteration(self, run_id: str, record: IterationRecord) -> None:
@@ -53,4 +53,4 @@ class InMemoryConfigStore:
         try:
             return self._configs[(run_id, version)]
         except KeyError as exc:
-            raise CostwiseError("missing store file: config") from exc
+            raise MissingStoreError("missing store file: config") from exc

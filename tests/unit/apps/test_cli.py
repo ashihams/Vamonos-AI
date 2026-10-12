@@ -8,31 +8,63 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
+from costwise.adapters.approval.auto_approver import AutoApprover
 from costwise.apps.cli import main as cli_main
 from costwise.apps.cli.main import app
+from costwise.apps.cli.support import iteration_lines
 from costwise.bootstrap import CliDeps, EvalStack, FixtureStack, RunnerKind
 from costwise.domain.errors import ConfigError
+from costwise.domain.guardrails import GuardrailPolicy
 from costwise.domain.labels import WorkloadPolicy
+from costwise.domain.proposals import ApprovalDecision
+from costwise.ports.approval import Approver
 from costwise.ports.data import CompanyDataSource, CompanyFetch
 from costwise.services.baseline import BaselineService
 from costwise.services.budget import BudgetService
 from costwise.services.fixtures import FixtureService
-from tests.testing_fakes import FakeCompanySource, InMemoryConfigStore, InMemoryFixtureStore
+from costwise.services.iteration import IterationDeciders, IterationService, IterationStores
+from costwise.services.optimizer import OptimizerService
+from costwise.services.proposers import HeuristicProposer
+from tests.testing_fakes import (
+    FakeCompanySource,
+    InMemoryConfigStore,
+    InMemoryFixtureStore,
+    ScriptedApprover,
+)
 from tests.unit.domain.builders import make_company, make_config, make_prices, make_rule
-from tests.unit.eval_support import answering_runner, make_evaluation, make_labels, make_requests
+from tests.unit.eval_support import answering_runner, make_evaluation, make_labels, split_requests
 
 _RUNNER = CliRunner()
+DECLINE = ApprovalDecision(approved=False, note="not now")
 
 
 def _eval_stack(cap: str) -> EvalStack:
-    """Wire a baseline over four labeled companies and a real budget with the given cap."""
-    labels = make_labels(4)
+    """Wire a baseline and the loop over four companies, one held out, and a real budget."""
+    labels = make_labels(4, heldout=(3,))
     runner = answering_runner(labels)
     harness = make_evaluation(runner, labels)
     budget = BudgetService(Decimal(cap), 0.8, make_prices())
-    baseline = BaselineService(harness.service, InMemoryConfigStore(), harness.telemetry, budget)
+    configs = InMemoryConfigStore()
+    baseline = BaselineService(harness.service, configs, harness.telemetry, budget)
+    optimizer = OptimizerService(None, HeuristicProposer())
+    policy = GuardrailPolicy(max_success_drop_pp=2.0, p95_multiplier=1.25, budget_stop_fraction=0.8)
+
+    def iteration_with(approver: Approver) -> IterationService:
+        """Wire the loop around approver."""
+        return IterationService(
+            harness.service,
+            runner,
+            IterationDeciders(optimizer, approver, policy),
+            IterationStores(harness.store, configs, harness.telemetry),
+            budget,
+        )
+
     return EvalStack(
-        baseline, make_config(), tuple(make_requests(0, 1, 2, 3)), runner.capabilities()
+        baseline,
+        make_config(),
+        tuple(split_requests(labels, 0, 1, 2, 3)),
+        runner.capabilities(),
+        iteration_with,
     )
 
 
@@ -59,6 +91,7 @@ def _deps(
             FixtureService(fixtures), make_rule(), workload
         ),
         crustdata_source=lambda: nullcontext(source),
+        approver=lambda auto: AutoApprover() if auto else ScriptedApprover([DECLINE]),
     )
 
 
@@ -138,6 +171,30 @@ def test_fixtures_label_counts_heldout_and_fits() -> None:
     result = _RUNNER.invoke(app, ["fixtures", "label"], obj=_deps(store=store))
     assert result.exit_code == 0, result.output
     assert "labeled=8 heldout=2 expected_fit=4" in result.output
+
+
+def test_optimize_auto_approve_keeps_a_passing_change() -> None:
+    """Easy tasks on the strong model lead to a routing change that passes the guardrails."""
+    result = _RUNNER.invoke(
+        app, ["optimize", "--run-id", "o1", "--iterations", "1", "--auto-approve"], obj=_deps()
+    )
+    assert result.exit_code == 0, result.output
+    assert "iteration 1: routing=" in result.output
+    assert "kept (guardrails passed)" in result.output
+    assert "accepted config version: 2" in result.output
+
+
+def test_optimize_without_auto_approve_asks_the_approver() -> None:
+    """A declined proposal leaves the baseline config in place."""
+    result = _RUNNER.invoke(app, ["optimize", "--run-id", "o1", "--iterations", "1"], obj=_deps())
+    assert result.exit_code == 0, result.output
+    assert "declined (rejected by approver)" in result.output
+    assert "accepted config version: 1" in result.output
+
+
+def test_iteration_lines_say_when_nothing_ran() -> None:
+    """An empty loop still reports the accepted version."""
+    assert iteration_lines([], 1) == ["no iterations ran", "accepted config version: 1"]
 
 
 def test_main_runs_the_app(monkeypatch: pytest.MonkeyPatch) -> None:
