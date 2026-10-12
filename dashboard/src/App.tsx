@@ -10,6 +10,8 @@ import { Hero } from "./sections/Hero";
 import { Iterations } from "./sections/Iterations";
 import { Method } from "./sections/Method";
 import { Overview } from "./sections/Overview";
+import { Quality } from "./sections/Quality";
+import { Replay } from "./sections/Replay";
 import { Stack } from "./sections/Stack";
 import { Tasks } from "./sections/Tasks";
 import { Versions } from "./sections/Versions";
@@ -58,7 +60,9 @@ function Dashboard({ data }: { data: DashboardData }) {
         <Hero run={run} />
         <Overview run={run} metrics={metrics} />
         <Iterations run={run} />
+        <Replay run={run} />
         <Versions run={run} />
+        <Quality run={run} />
         <Tasks run={run} />
         <Stack />
         <Method />

@@ -10,7 +10,9 @@ import { Logo } from "./Logo";
 const LINKS = [
   { href: "#overview", label: "Overview" },
   { href: "#iterations", label: "Iterations" },
+  { href: "#replay", label: "Approve" },
   { href: "#versions", label: "Versions" },
+  { href: "#quality", label: "Quality" },
   { href: "#tasks", label: "Tasks" },
   { href: "#stack", label: "Stack" },
   { href: "#method", label: "Method" },

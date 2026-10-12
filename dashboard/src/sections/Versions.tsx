@@ -21,7 +21,7 @@ export function Versions({ run }: { run: DashboardRun }) {
   return (
     <Section
       id="versions"
-      label="03 · Versions"
+      label="04 · Versions"
       title="Where the money goes"
       description="Model calls dominate the bill. Infrastructure is modeled from wall time, and data is shown at the configured price per Crustdata credit, which is still $0 because the hackathon credits were free."
     >

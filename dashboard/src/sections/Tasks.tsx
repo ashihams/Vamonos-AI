@@ -36,7 +36,7 @@ export function Tasks({ run }: { run: DashboardRun }) {
   return (
     <Section
       id="tasks"
-      label="04 · Task explorer"
+      label="06 · Task explorer"
       title="Every company the agent qualified"
       description="One row per task: the company, the split, whether the answer matched its label, what it cost, and the model's own reasons."
     >

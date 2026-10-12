@@ -39,6 +39,11 @@ export function humanize(identifier: string): string {
   return identifier.replaceAll("_", " ");
 }
 
+/** Guardrail details carry raw floats; trim them to four decimals. */
+export function prettyDetail(detail: string): string {
+  return detail.replace(/(\d+\.\d{4})\d+/g, "$1");
+}
+
 export function jsonInline(value: unknown): string {
   return JSON.stringify(value)
     .replaceAll('":', '": ')
