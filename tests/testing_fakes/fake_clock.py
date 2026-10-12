@@ -17,6 +17,21 @@ class FixedClock:
         return self._now_ns
 
 
+class SteppingClock:
+    """Advance by a fixed step on every call, starting at start_ns."""
+
+    def __init__(self, start_ns: int, step_ns: int) -> None:
+        """Store the first timestamp and the step."""
+        self._next = start_ns
+        self._step = step_ns
+
+    def now_ns(self) -> int:
+        """Return the current timestamp, then advance by one step."""
+        current = self._next
+        self._next += self._step
+        return current
+
+
 class TickingClock:
     """Return scripted timestamps in order, one per call."""
 
