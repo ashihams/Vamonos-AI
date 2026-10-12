@@ -252,7 +252,24 @@ Builder's choice after `demo-2`: fix both gaps it exposed. No paid calls were ma
 - cfo.ai's results: gross profit 0.393 USD per qualification. Unit gross profit stays positive only while Crustdata costs less than 0.1965 USD per credit, at two credits per lookup. The rejected Haiku routing (about 0.054 USD per success, 40% held-out accuracy) is shown as an unshipped counterfactual.
 - cfo.ai notes the held-out sample size as "not provided". It was 5 tasks, and the evaluation set 23.
 
-Planned and not started: the rest of the neatlogs dashboard check (task trace, filters), the Lambda deploy, and the demo.
+### 2026-10-12 — neatlogs spans rebuilt on the SDK's attribute names
+
+- Why: in the smoke run, every span showed as type CHAIN, the INPUT and OUTPUT columns were empty, and guardrails had no Passed/Blocked label. costwise had been sending its own attribute names.
+- Source: the neatlogs Python SDK 1.4.26 wheel from PyPI, file `neatlogs/config/attribute-mapping.json`, which lists the attribute names the backend reads. The SDK itself is not a dependency; spans are still built with OpenTelemetry.
+- Task traces: the task is a `workflow` root, with `neatlogs.session.id` = run id, `neatlogs.end_user.id` = company domain, and JSON input and output. Under it are:
+  - a `tool` span for the company lookup;
+  - one `llm` span per model call, carrying model, provider, token counts, and `cost_usd` from `config/pricing.yaml`;
+  - an `evaluator` span for the label score.
+- Iteration traces: the iteration is an `agent` root, with the proposal as input and the decision as output. Under it are:
+  - a `guardrail` span for the human approval;
+  - an `evaluator` span with the candidate's results;
+  - one `guardrail` span per check, with `neatlogs.guardrail.passed` as a boolean.
+- New `scripts/replay_neatlogs.py` re-sends stored runs without model calls. It sent `demo` (56 task traces, 1 iteration) and `demo-2` (84 task traces, 2 iterations) with no exporter errors. Task spans keep their recorded start times; iteration spans are stamped at replay time.
+- The end-to-end optimize test was flaky under coverage: with a mocked model, baseline p95 is a few milliseconds, so the 1.25× latency guardrail tripped on scheduler noise. That test's own workspace now sets `p95_multiplier: 1000.0`; `config/policy.yaml` is unchanged.
+- `make check` exited 0. pytest: 358 passed, total coverage 99.89%.
+- Dashboard check of the rebuilt traces: not done yet.
+
+Planned and not started: the dashboard check of the rebuilt traces, the Lambda deploy, and the demo.
 
 ## Demo
 

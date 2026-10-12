@@ -6,10 +6,10 @@ Status as of 2026-10-12. Live model calls and the neatlogs dashboard are partly 
 | --- | --- | --- | --- |
 | Crustdata credits per enrich call | code marker | Open: docs say 2 credits; the dashboard charge is unchecked | builder |
 | LiteLLM accepts `max_tokens` and returns `usage` | code marker | Partly done: Sonnet returns `usage`; Haiku and the token cap are unchecked | the first optimize run |
-| neatlogs renders `neatlogs.guardrail.passed` | code marker | Partly done: a failed guardrail shows as ERROR through the span status; no Passed/Blocked label seen | builder |
+| neatlogs span attributes render as intended | manual | Names now taken from the neatlogs SDK's attribute map; the dashboard view after the rewrite is unchecked | builder |
 | Lambda Tail log ends with the REPORT line | code marker | Open: not deployed | builder, after `make lambda-deploy` |
 | Lambda deployment | manual | Not run; the zip builds locally | builder |
-| neatlogs smoke check | manual | Partly done: both traces arrived and the iteration trace nests; the task trace is unchecked | builder |
+| neatlogs smoke check | manual | Partly done: traces arrive and nest; rerun after the attribute rewrite | builder |
 | Collector image and file output | config | Open: image not pinned, file write untested | builder |
 | Model names and per-token prices | config | Done 2026-10-12: `claude-haiku` and `claude-sonnet-4.6` at the proxy's rates | — |
 | Crustdata USD price per credit | config | Open: `0.00` placeholder; needs a stated assumption | builder |
@@ -29,12 +29,18 @@ Status as of 2026-10-12. Live model calls and the neatlogs dashboard are partly 
 - 2026-10-12 dry run: 5 `claude-sonnet-4.6` calls returned `usage` (25,748 to 50,579 input tokens, 108 to 138 output tokens).
 - Still unchecked: a `claude-haiku` call, and whether `max_tokens` is honored. No output came near the 512-token cap.
 
-## TODO(VERIFY: neatlogs renders neatlogs.guardrail.passed on plain OTLP spans as Passed/Blocked)
+## neatlogs span attributes (manual, not a code marker)
 
-- Where: `src/costwise/adapters/telemetry/attributes.py`, `GUARDRAIL_PASSED`, set on each guardrail child span of an iteration span.
-- Source so far: the build spec names the attribute. The span status is also set to OK or ERROR, so the outcome shows even if neatlogs ignores the attribute.
-- Check: run `scripts/smoke_neatlogs.py` and look at the `guardrail heldout_success` span, which is a failed check.
-- 2026-10-12 smoke run, as seen by the builder on the dashboard: the `optimizer_iteration` trace contains `guardrail eval_success` and `guardrail heldout_success`. The failed one is marked ERROR with a cross, the trace ends with error "smoke failure", and the trace list flags it "Execution Failed". All three spans show as type CHAIN. No Passed/Blocked label was visible, so whether neatlogs reads the attribute is still unknown. The span status alone makes the outcome visible.
+- Where: `src/costwise/adapters/telemetry/attributes.py`, `task_spans.py`, `iteration_spans.py`.
+- 2026-10-12 smoke run, as seen by the builder on the dashboard: every span showed as type CHAIN, the INPUT and OUTPUT columns were empty, and a failed guardrail showed only through its ERROR status, with no Passed/Blocked label.
+- Cause: costwise sent its own attribute names. The neatlogs Python SDK 1.4.26 (PyPI wheel, `neatlogs/config/attribute-mapping.json`) defines the names the backend reads:
+  - `neatlogs.span.kind`, lowercase (`workflow`, `agent`, `llm`, `tool`, `guardrail`, `evaluator`, ...);
+  - `neatlogs.<kind>.input` and `neatlogs.<kind>.output`;
+  - `neatlogs.llm.model_name`, `.provider`, `.token_count.prompt|completion|total`, `.cost_usd`;
+  - `neatlogs.session.id`, `neatlogs.end_user.id`, `neatlogs.end_user.metadata` on the root span;
+  - `neatlogs.guardrail.passed` as a boolean, plus `.name` and `.reason`.
+- Change: spans now use those names. Each task is a `workflow` trace with a `tool` span for the company lookup, one `llm` span per model call, and an `evaluator` span for the label score. Each optimizer iteration is an `agent` trace with a `guardrail` span for the human approval, an `evaluator` span for the candidate run, and one `guardrail` span per check. All traces of a run share `neatlogs.session.id` = run id. `neatlogs.end_user.id` is the company domain being qualified, so the Users view lists companies, not people.
+- Still unchecked: that the dashboard shows the kinds, inputs and outputs, Passed/Blocked, sessions, users, and cost after this change. Check: run `scripts/smoke_neatlogs.py` or `scripts/replay_neatlogs.py --run-id demo`.
 
 ## TODO(VERIFY: the Tail log of a text-format python3.12 function ends with this REPORT line)
 
@@ -52,11 +58,11 @@ Status as of 2026-10-12. Live model calls and the neatlogs dashboard are partly 
 
 - Source: neatlogs engineers, as recorded in the build spec, gave OTLP over gRPC at `ingest.neatlogs.com:443` with TLS and the `x-api-key` header. Only `neatlogs.workflow.*`, `neatlogs.session.*`, and `neatlogs.end_user.id` are filterable.
 - 2026-10-12, session `smoke-1791796161019`: both traces arrived at 2:39 PM IST under the `costwise` service. The iteration trace nests its two guardrail spans, as described above.
+- The `gen_ai.*` token fields from that run were replaced by `neatlogs.llm.*`; see "neatlogs span attributes" above.
 - Still unchecked:
-  - whether `gen_ai.usage.*` token fields show;
   - whether `neatlogs.workflow.*` attributes filter;
-  - whether the two model-call spans nest under the task span;
-  - whether numeric cost attributes keep their values.
+  - whether the model-call spans nest under the task span;
+  - whether `neatlogs.llm.cost_usd` feeds the cost analytics.
 
 ## Collector image and file output (config, not a code marker)
 

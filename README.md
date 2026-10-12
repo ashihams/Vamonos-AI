@@ -102,7 +102,13 @@ Defaults are region `us-east-1` and function `costwise-qualify`; set `AWS_REGION
 
 - With `NEATLOGS_API_KEY` set, task and iteration spans are exported to neatlogs over OTLP/gRPC with TLS at `ingest.neatlogs.com:443`, using the `x-api-key` header.
 - Without it, telemetry is discarded.
+- Spans use the attribute names from the neatlogs SDK's attribute map:
+  - Each task is a `workflow` trace. Under it are a `tool` span for the company lookup, one `llm` span per model call (model, tokens, `cost_usd`), and an `evaluator` span for the label score. Inputs and outputs are JSON.
+  - Each optimizer iteration is an `agent` trace whose input is the proposal. Under it are a `guardrail` span for the human approval, an `evaluator` span for the candidate run, and one `guardrail` span per check, marked passed or blocked.
+  - All traces of a run share one neatlogs session, the run id.
+  - The neatlogs "end user" is the company domain being qualified, so the Users view lists companies.
 - Check the neatlogs connection with `uv run python scripts/smoke_neatlogs.py`, then find the logged `run_id` in the dashboard.
+- `uv run python scripts/replay_neatlogs.py --run-id demo` re-sends a stored run's recorded results and iterations to neatlogs. It makes no model calls.
 - Summary metrics go only to a local Collector. Start it with `docker compose --env-file .env -f infra/collector/docker-compose.yaml up -d` and set `OTEL_COLLECTOR_ENDPOINT=localhost:4317`. The Collector writes `infra/collector/data/telemetry.jsonl`.
 - If exports hang with `DEADLINE_EXCEEDED`, set `GRPC_DNS_RESOLVER=native` in the environment.
 
@@ -114,4 +120,4 @@ Defaults are region `us-east-1` and function `costwise-qualify`; set `AWS_REGION
 - **The infra lever is small.** Lambda memory only matters with the Lambda runner, and infra is a small share of cost next to model and data cost. Locally, infra cost is modeled from wall time and the memory lever is not offered.
 - **Small workload.** 28 requests (23 evaluation, 5 held-out), sized so a baseline and one iteration fit the $20 shared model allowance. Differences of a few percentage points are within noise, and one held-out miss is a 20-point drop.
 - **Prices are configuration, not a bill.** Model prices are the LiteLLM proxy's own rates, read on 2026-10-12. The Lambda prices are the build spec's values and have not been checked against the AWS pricing page or a bill. The Crustdata price per credit is still `0.00`, so data cost shows as zero until an assumption is set.
-- **Not yet run live.** As of v0.1.0, no run has used a real model key, AWS, or neatlogs. Open items are tracked in [docs/open-verifications.md](docs/open-verifications.md).
+- **Partly run live.** The model proxy and neatlogs have been used. AWS has not. Open items are tracked in [docs/open-verifications.md](docs/open-verifications.md).

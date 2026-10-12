@@ -1,5 +1,6 @@
 """OtelSink against the in-memory span exporter and metric reader."""
 
+import json
 from decimal import Decimal
 
 from opentelemetry.sdk.metrics import MeterProvider
@@ -12,18 +13,27 @@ from opentelemetry.trace import StatusCode
 from costwise.adapters.telemetry import attributes as attr
 from costwise.adapters.telemetry.otel_sink import OtelSink
 from costwise.domain.config import Lever
+from costwise.domain.cost import PriceBook
 from costwise.domain.guardrails import CheckOutcome, GuardrailResult
 from costwise.domain.proposals import ApprovalDecision, IterationRecord, Proposal
-from costwise.domain.task import ModelTier, TaskResult
+from costwise.domain.task import ModelTier, QualificationAnswer, TaskResult
 from tests.testing_fakes import SteppingClock
-from tests.unit.domain.builders import CallSpec, ResultSpec, make_call, make_result, make_summary
+from tests.unit.domain.builders import (
+    CallSpec,
+    ResultSpec,
+    make_call,
+    make_prices,
+    make_result,
+    make_summary,
+)
 
 _START = 1_700_000_000_000_000_000
 _MS = 1_000_000
+_ANSWER = QualificationAnswer(icp_fit=True, reasons=("fits",), headcount_band="51-200", stage=None)
 
 
 def _sink(
-    with_metrics: bool = False,
+    with_metrics: bool = False, prices: PriceBook | None = None
 ) -> tuple[OtelSink, InMemorySpanExporter, InMemoryMetricReader]:
     """Return a sink over in-memory exporters."""
     exporter = InMemorySpanExporter()
@@ -31,10 +41,10 @@ def _sink(
     provider.add_span_processor(SimpleSpanProcessor(exporter))
     reader = InMemoryMetricReader()
     meters = MeterProvider(metric_readers=[reader]) if with_metrics else None
-    return OtelSink(provider, meters, SteppingClock(_START, _MS)), exporter, reader
+    return OtelSink(provider, meters, SteppingClock(_START, _MS), prices), exporter, reader
 
 
-def _task(error: str | None = None) -> TaskResult:
+def _task(error: str | None = None, answered: bool = False) -> TaskResult:
     """Return a task with a cheap call at 5 ms and a strong call at 320 ms."""
     calls = (
         make_call(
@@ -46,9 +56,13 @@ def _task(error: str | None = None) -> TaskResult:
             )
         ),
     )
-    return make_result(
+    result = make_result(
         ResultSpec(calls=calls, total_latency_ms=1250, error=error, started_at_ns=_START)
     )
+    if not answered:
+        return result
+    invocation = result.invocation.model_copy(update={"answer": _ANSWER})
+    return result.model_copy(update={"invocation": invocation})
 
 
 def _by_name(spans: tuple[ReadableSpan, ...]) -> dict[str, ReadableSpan]:
@@ -56,58 +70,104 @@ def _by_name(spans: tuple[ReadableSpan, ...]) -> dict[str, ReadableSpan]:
     return {span.name: span for span in spans}
 
 
-def test_task_span_tree_times_and_attributes() -> None:
-    """One root span per task and one nested child per call, with explicit timestamps."""
-    sink, exporter, _ = _sink()
+def _attrs(span: ReadableSpan) -> dict[str, object]:
+    """Return a span's attributes as a plain dict."""
+    return dict(span.attributes or {})
+
+
+def test_task_trace_is_a_workflow_with_tool_llm_and_evaluator_children() -> None:
+    """The root carries identity and IO; children nest with explicit timestamps."""
+    sink, exporter, _ = _sink(prices=make_prices())
     result = _task()
     sink.record_task("run-1", result)
     spans = _by_name(exporter.get_finished_spans())
-    root = spans[attr.TASK_SPAN]
-    cheap = spans["chat cheap-model"]
-    strong = spans["chat strong-model"]
+    root, data = spans[attr.TASK_SPAN], spans[attr.DATA_SPAN]
+    cheap, strong = spans["chat cheap-model"], spans["chat strong-model"]
+    score = spans[attr.SCORE_SPAN]
     assert root.parent is None
-    assert root.start_time == _START
-    assert root.end_time == _START + 1250 * _MS
-    for child in (cheap, strong):
+    assert (root.start_time, root.end_time) == (_START, _START + 1250 * _MS)
+    for child in (data, cheap, strong, score):
         assert child.parent is not None
         assert child.parent.span_id == root.context.span_id
-        assert child.context.trace_id == root.context.trace_id
-    assert cheap.start_time == _START + 5 * _MS
-    assert cheap.end_time == _START + 305 * _MS
+    assert (data.start_time, data.end_time) == (_START, _START + 5 * _MS)
+    assert (cheap.start_time, cheap.end_time) == (_START + 5 * _MS, _START + 305 * _MS)
     assert strong.start_time == _START + 320 * _MS
-    assert dict(root.attributes or {}) == {
-        attr.RUN_ID: "run-1",
-        attr.TASK_ID: result.request.task_id,
-        attr.CONFIG_VERSION: result.config_version,
-        attr.TASK_CATEGORY: result.difficulty.value,
-        attr.SPLIT: result.request.split.value,
-        attr.SUCCESS: "true" if result.success else "false",
-        attr.DATA_CACHE_HIT: "false",
-        attr.INFRA_SOURCE: result.infra_source.value,
-        attr.COST_MODEL_USD: float(result.costs.model_usd),
-        attr.COST_INFRA_USD: float(result.costs.infra_usd),
-        attr.COST_DATA_USD: float(result.costs.data_usd),
-    }
-    assert dict(cheap.attributes or {}) == {
-        attr.GEN_AI_OPERATION: "chat",
-        attr.GEN_AI_REQUEST_MODEL: "cheap-model",
-        attr.GEN_AI_INPUT_TOKENS: 100,
-        attr.GEN_AI_OUTPUT_TOKENS: 20,
+    root_attrs = _attrs(root)
+    assert root_attrs[attr.SPAN_KIND] == "workflow"
+    assert root_attrs[attr.SESSION_ID] == "run-1"
+    assert root_attrs[attr.END_USER_ID] == "example.com"
+    assert json.loads(str(root_attrs["neatlogs.workflow.input"]))["task_id"] == "task-1"
+    assert json.loads(str(root_attrs["neatlogs.workflow.output"])) == {"error": None}
+    assert root_attrs[attr.SUCCESS] == "true"
+    assert root_attrs[attr.COST_DATA_USD] == float(result.costs.data_usd)
+    assert _attrs(data)[attr.SPAN_KIND] == "tool"
+    assert json.loads(str(_attrs(data)["neatlogs.tool.output"]))["credits"] == "1"
+    assert _attrs(cheap) == {
+        attr.SPAN_KIND: "llm",
+        attr.LLM_MODEL_NAME: "cheap-model",
+        attr.LLM_PROVIDER: "litellm",
+        attr.LLM_PROMPT_TOKENS: 100,
+        attr.LLM_COMPLETION_TOKENS: 20,
+        attr.LLM_TOTAL_TOKENS: 120,
         attr.MODEL_TIER: "cheap",
+        attr.LLM_COST_USD: float(Decimal("0.00014")),
     }
+    assert _attrs(score)[attr.SPAN_KIND] == "evaluator"
+    assert json.loads(str(_attrs(score)["neatlogs.evaluator.output"]))["success"] is True
     assert root.status.status_code is StatusCode.UNSET
+
+
+def test_the_answer_is_the_output_of_the_root_and_the_last_call() -> None:
+    """Only the final call produced the parsed answer."""
+    sink, exporter, _ = _sink()
+    sink.record_task("run-1", _task(answered=True))
+    spans = _by_name(exporter.get_finished_spans())
+    expected = _ANSWER.model_dump_json()
+    assert _attrs(spans[attr.TASK_SPAN])["neatlogs.workflow.output"] == expected
+    assert _attrs(spans["chat strong-model"])["neatlogs.llm.output"] == expected
+    assert "neatlogs.llm.output" not in _attrs(spans["chat cheap-model"])
+
+
+def test_call_cost_is_left_out_without_a_price() -> None:
+    """No price book, or an unpriced model, means no cost attribute."""
+    sink, exporter, _ = _sink()
+    sink.record_task("run-1", _task())
+    assert attr.LLM_COST_USD not in _attrs(
+        _by_name(exporter.get_finished_spans())["chat cheap-model"]
+    )
+    priced_sink, priced_exporter, _ = _sink(prices=make_prices())
+    unknown = make_result(ResultSpec(calls=(make_call(CallSpec(model="other-model")),)))
+    priced_sink.record_task("run-1", unknown)
+    other = _by_name(priced_exporter.get_finished_spans())["chat other-model"]
+    assert attr.LLM_COST_USD not in _attrs(other)
 
 
 def test_failed_task_marks_the_root_span_as_error() -> None:
     """An invocation error becomes an ERROR status with the message."""
     sink, exporter, _ = _sink()
     sink.record_task("run-1", _task(error="LLMError: model call returned status 400"))
-    root = _by_name(exporter.get_finished_spans())[attr.TASK_SPAN]
+    spans = _by_name(exporter.get_finished_spans())
+    root = spans[attr.TASK_SPAN]
     assert root.status.status_code is StatusCode.ERROR
     assert root.status.description == "LLMError: model call returned status 400"
+    assert spans[attr.DATA_SPAN].status.status_code is StatusCode.UNSET
 
 
-def _iteration(guardrails: GuardrailResult | None) -> IterationRecord:
+def test_a_task_that_failed_before_any_model_call_blames_the_data_lookup() -> None:
+    """With no calls, the lookup span covers the whole task and carries the error."""
+    sink, exporter, _ = _sink()
+    failed = make_result(
+        ResultSpec(calls=(), error="DataError: 503", total_latency_ms=40, started_at_ns=_START)
+    )
+    sink.record_task("run-1", failed)
+    data = _by_name(exporter.get_finished_spans())[attr.DATA_SPAN]
+    assert data.end_time == _START + 40 * _MS
+    assert data.status.status_code is StatusCode.ERROR
+
+
+def _iteration(
+    guardrails: GuardrailResult | None, approved: bool = True, note: str = "ok"
+) -> IterationRecord:
     """Return a rejected routing iteration."""
     return IterationRecord(
         iteration=2,
@@ -118,18 +178,18 @@ def _iteration(guardrails: GuardrailResult | None) -> IterationRecord:
             predicted_cost_change_pct=-30.0,
             risk="medium",
         ),
-        decision=ApprovalDecision(approved=True, note="ok"),
+        decision=ApprovalDecision(approved=approved, note=note),
         baseline_version=1,
-        candidate_version=2,
-        candidate_summary=None,
+        candidate_version=2 if approved else None,
+        candidate_summary=make_summary(0.5, 900) if approved else None,
         guardrails=guardrails,
         accepted=False,
         reason="held-out success dropped",
     )
 
 
-def test_iteration_span_with_guardrail_children() -> None:
-    """Each guardrail check is a child span with a passed flag and an OK or ERROR status."""
+def test_iteration_trace_is_an_agent_with_approval_evaluation_and_guardrails() -> None:
+    """Approval and each check are GUARDRAIL spans with boolean passed flags."""
     sink, exporter, _ = _sink()
     checks = (
         CheckOutcome(name="eval_success", passed=True, detail="no drop"),
@@ -137,32 +197,39 @@ def test_iteration_span_with_guardrail_children() -> None:
     )
     sink.record_iteration("run-1", _iteration(GuardrailResult(passed=False, checks=checks)))
     spans = _by_name(exporter.get_finished_spans())
-    parent = spans[attr.ITERATION_SPAN]
-    assert parent.parent is None
-    assert dict(parent.attributes or {}) == {
-        attr.RUN_ID: "run-1",
-        attr.ITERATION: 2,
-        attr.LEVER: "routing",
-        attr.DECISION: "approved",
-        attr.ACCEPTED: "false",
-        attr.REASON: "held-out success dropped",
-    }
-    passed = spans["guardrail eval_success"]
-    failed = spans["guardrail heldout_success"]
+    root = spans[attr.ITERATION_SPAN]
+    assert root.parent is None
+    root_attrs = _attrs(root)
+    assert root_attrs[attr.SPAN_KIND] == "agent"
+    assert root_attrs[attr.SESSION_ID] == "run-1"
+    assert root_attrs[attr.LEVER] == "routing"
+    assert json.loads(str(root_attrs["neatlogs.agent.input"]))["lever"] == "routing"
+    assert json.loads(str(root_attrs["neatlogs.agent.output"]))["accepted"] is False
+    approval = spans[attr.APPROVAL_SPAN]
+    assert _attrs(approval)[attr.GUARDRAIL_PASSED] is True
+    assert approval.status.status_code is StatusCode.OK
+    candidate = _attrs(spans[attr.CANDIDATE_SPAN])
+    assert candidate[attr.SPAN_KIND] == "evaluator"
+    assert json.loads(str(candidate["neatlogs.evaluator.output"]))["p95_latency_ms"] == 900
+    passed, failed = spans["guardrail eval_success"], spans["guardrail heldout_success"]
     assert passed.parent is not None
-    assert passed.parent.span_id == parent.context.span_id
-    assert (passed.attributes or {})[attr.GUARDRAIL_PASSED] == "true"
-    assert passed.status.status_code is StatusCode.OK
-    assert (failed.attributes or {})[attr.GUARDRAIL_PASSED] == "false"
+    assert passed.parent.span_id == root.context.span_id
+    assert _attrs(passed)[attr.GUARDRAIL_PASSED] is True
+    assert _attrs(failed)[attr.GUARDRAIL_PASSED] is False
+    assert _attrs(failed)[attr.GUARDRAIL_REASON] == "dropped 5 pp"
     assert failed.status.status_code is StatusCode.ERROR
     assert failed.status.description == "dropped 5 pp"
 
 
-def test_iteration_without_guardrails_has_no_children() -> None:
-    """A rejected-by-human iteration has no guardrail spans."""
+def test_a_declined_iteration_has_only_a_blocked_approval() -> None:
+    """A human decline blocks at approval; there is no candidate or guardrail span."""
     sink, exporter, _ = _sink()
-    sink.record_iteration("run-1", _iteration(None))
-    assert [span.name for span in exporter.get_finished_spans()] == [attr.ITERATION_SPAN]
+    sink.record_iteration("run-1", _iteration(None, approved=False, note=""))
+    spans = _by_name(exporter.get_finished_spans())
+    assert set(spans) == {attr.ITERATION_SPAN, attr.APPROVAL_SPAN}
+    approval = spans[attr.APPROVAL_SPAN]
+    assert _attrs(approval)[attr.GUARDRAIL_PASSED] is False
+    assert approval.status.description == "declined"
 
 
 def test_summary_gauges_are_labeled_by_run_and_version_only() -> None:

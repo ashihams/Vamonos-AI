@@ -60,6 +60,7 @@ def _write_workspace(root: Path, budget: str) -> None:
     config.mkdir()
     policy = (_REPO_CONFIG / "policy.yaml").read_text(encoding="utf-8")
     pinned = re.sub(r"n_requests: \d+", "n_requests: 40", policy)
+    pinned = re.sub(r"p95_multiplier: [\d.]+", "p95_multiplier: 1000.0", pinned)
     (config / "policy.yaml").write_text(pinned, encoding="utf-8")
     shutil.copy(_REPO_CONFIG / "icp.yaml", config)
     (config / "pricing.yaml").write_text(_PRICING, encoding="utf-8")
