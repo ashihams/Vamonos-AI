@@ -166,7 +166,20 @@ Committed on its own branch, `feat/report`, stacked on the Stage 10 branch. No r
 
 `make check` exited 0. pytest: 341 passed. Overall coverage 99.88%; domain and services at 100%. Golden-file tests pin all four files for a fixed run (one change kept, one rolled back, one declined). The end-to-end CLI test now runs `report` after `optimize` against a mocked model endpoint.
 
-Planned and not started: the cfo.ai model, the business plan, and the demo.
+### 2026-10-12 — Stage 12 docs and v0.1.0
+
+Committed on its own branch, `feat/release`, stacked on the Stage 11 branch, and tagged `v0.1.0` locally. Stage 10 and 11 are open as stacked pull requests #11 and #12.
+
+- README rewritten: what costwise is, the metric, an architecture diagram in Mermaid, quickstart, the demo command sequence, and limitations (modeled data cost, frozen fixtures, rule-based labels, small infra lever, placeholder prices, no live run yet).
+- `docs/architecture.md`: layers and the import rules that enforce them, a table of ports and adapters, and step-by-step guides for adding a lever or a runner.
+- `docs/open-verifications.md` now opens with a status table. All nine open items are still open; only the Crustdata endpoint check is done.
+- `scripts/dry_run.py` runs the 5-task budget check.
+- Removed the unused all-in-one `Settings` class; its tests now cover `EvalSettings`, which the CLI uses.
+- History scan for secrets (counts only, values never printed): no API-key, AWS-key, private-key, or bearer-token patterns. Two `LITELLM_LICENSE=` lines in tests are placeholders (`unrelated`, `unrelated-value`) that check unrelated `.env` keys are ignored. No `.env`, raw fixture, or sample file was ever committed. The spec still asks the builder to run their own `git log -p` check.
+
+`make check` exited 0. pytest: 343 passed. Overall coverage 99.88%; domain and services at 100%. A fresh clone of the commit passed `make install && make check` with no `.env` and no raw fixtures. In that clone, `costwise --help` listed every command, and `scripts/dry_run.py` without keys exited 2 naming the missing settings.
+
+Planned and not started: claiming the LiteLLM key and filling model names and prices, the first live baseline and optimize run, the neatlogs smoke check, the Lambda deploy, Entire, the cfo.ai model, the business plan, and the demo.
 
 ## Demo
 
