@@ -209,6 +209,16 @@ First live optimize iteration (`optimize --run-id demo --iterations 1 --auto-app
 
 `costwise report --run-id demo` wrote `runs/demo/report/`. The report now explains that zero data cost means the hackathon Crustdata credits were free; a test covers this, and `make check` passed (344 tests). Spent on the shared key: about 5.1 USD, plus one proposer call.
 
+Second live run (`optimize --run-id demo-2 --iterations 2 --auto-approve`, builder's choice), with a fresh baseline:
+
+- Baseline v1 nearly matched the first run: 27 of 28 tasks, 2.886 USD in model cost, 0.107 USD per successful task.
+- Iteration 1: the model proposer suggested Haiku routing again (escalating on 2 or more missing fields), predicting a 45% saving. Rejections are remembered only within a run, so this repeated the change rejected in `demo`. The result was the same: evaluation 73.9%, held-out 40%, rolled back. It cost 1.02 USD.
+- Iteration 2: the proposer suggested turning on the company-data cache, predicting a 20% saving. All guardrails passed (evaluation 95.7%, held-out 100%, p95 5,771 against a 7,045 ms limit), so v3 was kept.
+- **The kept cache change saved nothing:** 0.106967 to 0.106976 USD per successful task. The cache only avoids Crustdata credits, which are priced at 0.00, and it does not shrink what is sent to the model. The proposer's claim that caching would reduce input tokens was wrong. The loop keeps any change that passes the guardrails; it does not require a saving. This is a design gap to raise, not hide.
+- Spent on the shared key so far: about 11.9 USD by costwise's accounting (baseline 2.89, v2 1.02, v3 2.89, plus two proposer calls, on top of the earlier 5.1). About 8 USD is left.
+
+Evidence from both runs is in `evidence/demo-2026-10-12/` and `evidence/demo-2-2026-10-12/`.
+
 Planned and not started: the first live dry run, baseline, and optimize run, the neatlogs smoke check, the Lambda deploy, Entire, the cfo.ai model, the business plan, and the demo.
 
 ## Demo

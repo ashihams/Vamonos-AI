@@ -1,0 +1,36 @@
+{
+  "run_id": "demo-2",
+  "baseline": {
+    "version": 1,
+    "tasks": 28,
+    "successes": 27,
+    "cost_per_successful_task_usd": "0.106967",
+    "model_usd": "2.886484",
+    "infra_usd": "0.001621",
+    "data_usd": "0.000000",
+    "success_rate_eval": 0.9565,
+    "success_rate_heldout": 1.0
+  },
+  "optimized": {
+    "version": 3,
+    "tasks": 28,
+    "successes": 27,
+    "cost_per_successful_task_usd": "0.106976",
+    "model_usd": "2.886764",
+    "infra_usd": "0.001589",
+    "data_usd": "0.000000",
+    "success_rate_eval": 0.9565,
+    "success_rate_heldout": 1.0
+  },
+  "cost_per_successful_task_change_pct": 0.0,
+  "sources": {
+    "model_usd": "measured tokens x configured prices",
+    "infra_usd": "modeled from local wall time",
+    "data_usd": "modeled from fixture credits x configured price"
+  },
+  "assumptions": {
+    "note": "Fill these in for the cfo.ai model. They are assumptions, not measurements.",
+    "price_per_task_usd": null,
+    "monthly_volume_scenarios": []
+  }
+}
