@@ -1,5 +1,20 @@
 # Open verifications
 
+Status as of v0.1.0 (2026-10-12). Nothing below has been checked against a live model key, AWS, or the neatlogs dashboard yet.
+
+| Item | Kind | Status | Who closes it |
+| --- | --- | --- | --- |
+| Crustdata credits per enrich call | code marker | Open: docs say 2 credits; the dashboard charge is unchecked | builder |
+| LiteLLM accepts `max_tokens` and returns `usage` | code marker | Open: waiting on the team key | builder, then one dry run |
+| neatlogs renders `neatlogs.guardrail.passed` | code marker | Open: smoke script ready, not run | builder |
+| Lambda Tail log ends with the REPORT line | code marker | Open: not deployed | builder, after `make lambda-deploy` |
+| Lambda deployment | manual | Not run; the zip builds locally | builder |
+| neatlogs smoke check | manual | Not run | builder |
+| Collector image and file output | config | Open: image not pinned, file write untested | builder |
+| Model names and per-token prices | config | Open: placeholders in `config/` | builder |
+| Crustdata USD price per credit | config | Open: `0.00` placeholder; needs a stated assumption | builder |
+| Crustdata endpoint, headers, and field mapping | checked | Done 2026-10-11 against the docs and one live call | — |
+
 ## TODO(VERIFY: Crustdata credits charged per company enrich call)
 
 - Where: `src/costwise/adapters/data/crustdata_client.py`, `CREDITS_PER_ENRICH = Decimal(2)`.
