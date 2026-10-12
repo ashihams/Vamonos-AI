@@ -16,7 +16,7 @@ Published handle: GitHub `ashihams`. No other name or teammate has been chosen f
 
 Used in the repository now: Python 3.12, uv, pydantic, pydantic-settings, PyYAML, httpx, tenacity, local JSON/JSONL files, and the Crustdata company enrich API.
 
-Planned, not integrated: neatlogs, Entire, cfo.ai, LiteLLM, and AWS Lambda. `config/pricing.yaml` and `config/icp.yaml` still hold the placeholder values from the build spec.
+In use since 2026-10-12: the LiteLLM proxy (`claude-haiku`, `claude-sonnet-4.6`), neatlogs traces over OpenTelemetry, and Entire checkpoints. Not integrated yet: cfo.ai (the model is built by hand from `cfo_inputs.json`) and AWS Lambda (code done, not deployed).
 
 ## Build log
 
@@ -236,7 +236,15 @@ Builder's choice after `demo-2`: fix both gaps it exposed. No paid calls were ma
 - Dashboard check by the builder: both traces arrived at 2:39 PM IST. The iteration trace shows `optimizer_iteration`, with `guardrail eval_success` and a failed `guardrail heldout_success` (ERROR) under it, ending with error "smoke failure". neatlogs flags that trace "Execution Failed". The task trace, with its token counts and model-call spans, has not been opened yet.
 - Builder's choice: no more paid model runs. The cfo.ai model will use the measured numbers already in `evidence/`. Those show no cost saving: the only cheaper change, Haiku routing, was rolled back for losing quality.
 
-Planned and not started: the rest of the neatlogs dashboard check (task trace, filters), the Lambda deploy, Entire, the cfo.ai model, the business plan, and the demo.
+### 2026-10-12 — Entire enabled, build notes checkpointed
+
+- Entire CLI 0.11.4, built with `go install` because the PowerShell installer got HTTP 403 from the GitHub API. `entire enable --agent cursor`, with telemetry off and local redaction rules for the model and neatlogs keys. Past chats were not imported, because they contain keys.
+- Builder's choice: instead of rebuilding the repo, a new Cursor chat wrote one build-notes file per stage PR (`docs/build-notes/stage-*.md`) from `hackathon.md`, the git log, and the chat history. Each file says on its first line that it was written after the stage was built.
+- Entire's Cursor hooks did not fire, since its log shows no hook calls. The chat was linked to each notes commit with `entire session attach --agent cursor --force`. All 13 notes commits carry `Entire-Checkpoint: 01M4QYRRBQ1DCFT4WRZ808FXGW`, one checkpoint for the one chat that wrote them.
+- Before pushing, the checkpoint and all notes commits were scanned for keys, `.env` lines, and personal-data patterns: none found.
+- Pushed. `refs/entire/checkpoints/GW/01M4QYRRBQ1DCFT4WRZ808FXGW` is on GitHub. After the builder installed the Entire GitHub App, the repo was mirrored, and the checkpoint shows publicly at [entire.io/gh/ashihams/Vamonos-AI/commit/68602e8](https://entire.io/gh/ashihams/Vamonos-AI/commit/68602e828e325879ab67cbc76637e4f4676a0a7f).
+
+Planned and not started: the rest of the neatlogs dashboard check (task trace, filters), the Lambda deploy, the cfo.ai model, the business plan, and the demo.
 
 ## Demo
 
@@ -244,8 +252,8 @@ No demo URL. Nothing has been deployed or submitted.
 
 ## Known limitations and next steps
 
-- Model names and prices are placeholders. Lambda and Crustdata prices in the example file are the spec placeholders, not a verified bill.
-- neatlogs, Entire, and cfo.ai are not connected. `entire enable` has not been run. There is no business plan yet.
+- Model prices are the LiteLLM proxy's own rates. Lambda prices are unverified, and Crustdata data is priced at 0 because the hackathon credits were free.
+- cfo.ai is not connected, and there is no business plan yet. Entire covers only the build-notes commits, not the original build sessions.
 - One defensive branch, a validation error with no field location, has no test.
 - 39 fixture companies, of which 8 fit the ICP. Always answering "not a fit" would score about 79%. The workload is 40 requests rather than the spec's 60.
 - A full enrich payload is about 230 KB per company. Sending it whole to a model would be expensive, so payload trimming matters in later stages.
