@@ -41,7 +41,7 @@ Already completed before this session, on branch `feat/domain-models`:
 
 ### 2026-10-12 — Stage 3 company data and fixtures
 
-Completed, not committed:
+Completed. Stages 2 and 3 were committed together as `244c39b` and opened as [PR #4](https://github.com/ashihams/Vamonos-AI/pull/4).
 
 - The Crustdata company plugin could not sign in (two attempts timed out), so costwise calls Crustdata's REST API directly. The endpoint, auth header, and version header come from Crustdata's public docs. They were confirmed by one live call for `retool.com` (HTTP 200, 2 credits per the pricing page).
 - `CrustdataClient` posts to `/company/enrich` with a 10 s timeout and retries server errors and timeouts twice. Other failures raise `DataSourceError`. It removes the funding contact email and phone before anything is stored.
@@ -65,7 +65,19 @@ Fixing the fit imbalance, same session (builder's choice: add clear fits, relax 
 
 Open: credits actually billed per call, the USD price per credit, and whether the client should retry HTTP 429 using the documented `X-RateLimit-Reset` header.
 
-Planned and not started: the LLM client, the task pipeline, the local runner, neatlogs telemetry, the optimizer, the iteration loop, the business plan, and the demo. Lambda remains a stretch stage.
+### 2026-10-12 — Stage 4 LLM client, retry, and budget (mocked only)
+
+Completed and committed on its own branch, `feat/llm-client`, stacked on PR #4. The team's LiteLLM key has not been claimed yet, so no live model call has been made and every test mocks HTTP.
+
+- `OpenAICompatibleClient` posts to `{base_url}/chat/completions` with a Bearer key, a 60 s timeout, `max_tokens`, and `temperature`. It returns the message text, prompt and completion token counts, and latency from the injected clock. HTTP 429, 5xx, and timeouts raise a retryable `TransientLLMError`; other statuses and malformed bodies raise `LLMError`. Error messages never include the key.
+- `RetryingLLMClient` retries transient errors up to twice. `BudgetedLLMClient` checks the budget before a call and records its cost after. `guarded_client` wraps budget around retry, so one logical call is checked once and charged once, and failed attempts cost nothing.
+- `BudgetService` tracks spend in Decimal under a lock and refuses calls once spend reaches a set fraction of the cap. The cost math is shared with the domain cost breakdown through a new `usage_cost` function.
+
+`make check` exited 0. pytest: 183 passed. Overall coverage 99.91%; domain and services at 100%. The tests cover success, 429 then success, three 500s, timeouts, eight malformed or rejected responses, decorator order, and budget recording from 8 threads at once.
+
+Open: confirm on the first live call that the proxy honors `max_tokens` and returns `usage`. Pick the cheap and strong models from the seven on the shared key and set their prices; `config/pricing.yaml` still has placeholders and zero prices.
+
+Planned and not started: the task pipeline, the local runner, neatlogs telemetry, the optimizer, the iteration loop, the business plan, and the demo. Lambda remains a stretch stage.
 
 ## Demo
 

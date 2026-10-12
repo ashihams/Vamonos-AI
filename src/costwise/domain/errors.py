@@ -21,6 +21,10 @@ class LLMError(CostwiseError):
     """Raised when a model call fails."""
 
 
+class TransientLLMError(LLMError):
+    """Raised when a model call hit a rate limit, server error, or timeout and may be retried."""
+
+
 class RunnerError(CostwiseError):
     """Raised when a task runner fails."""
 
