@@ -16,7 +16,7 @@ Published handle: GitHub `ashihams`. No other name or teammate has been chosen f
 
 Used in the repository now: Python 3.12, uv, pydantic, pydantic-settings, PyYAML, httpx, tenacity, local JSON/JSONL files, and the Crustdata company enrich API.
 
-In use since 2026-10-12: the LiteLLM proxy (`claude-haiku`, `claude-sonnet-4.6`), neatlogs traces over OpenTelemetry, and Entire checkpoints. Not integrated yet: cfo.ai (the model is built by hand from `cfo_inputs.json`) and AWS Lambda (code done, not deployed).
+In use since 2026-10-12: the LiteLLM proxy (`claude-haiku`, `claude-sonnet-4.6`), neatlogs traces over OpenTelemetry, and Entire checkpoints. cfo.ai holds the business model, built in its chat from `cfo_inputs.json` (no code integration). AWS Lambda is not deployed (code done).
 
 ## Build log
 
@@ -244,7 +244,15 @@ Builder's choice after `demo-2`: fix both gaps it exposed. No paid calls were ma
 - Before pushing, the checkpoint and all notes commits were scanned for keys, `.env` lines, and personal-data patterns: none found.
 - Pushed. `refs/entire/checkpoints/GW/01M4QYRRBQ1DCFT4WRZ808FXGW` is on GitHub. After the builder installed the Entire GitHub App, the repo was mirrored, and the checkpoint shows publicly at [entire.io/gh/ashihams/Vamonos-AI/commit/68602e8](https://entire.io/gh/ashihams/Vamonos-AI/commit/68602e828e325879ab67cbc76637e4f4676a0a7f).
 
-Planned and not started: the rest of the neatlogs dashboard check (task trace, filters), the Lambda deploy, the cfo.ai model, the business plan, and the demo.
+### 2026-10-12 — cfo.ai economics and business plan
+
+- Shared model: [app.cfo.ai/s/nBLdLr1K8qA0Jnd3](https://app.cfo.ai/s/nBLdLr1K8qA0Jnd3), "costwise — Economics & business plan", built in cfo.ai's chat from `evidence/demo-2-2026-10-12/cfo_inputs.json`.
+- Measured inputs: run `demo-2`, 27 of 28 tasks successful, 0.106967 versus 0.106976 USD per success (no saving). Model cost is measured tokens times configured prices, infrastructure is modeled, and data was credit-funded.
+- Builder's assumptions, labeled as such in the model: 0.50 USD per delivered qualification (including "does not fit" answers), 5,000 / 25,000 / 100,000 per month, and 200 USD fixed monthly costs.
+- cfo.ai's results: gross profit 0.393 USD per qualification. Unit gross profit stays positive only while Crustdata costs less than 0.1965 USD per credit, at two credits per lookup. The rejected Haiku routing (about 0.054 USD per success, 40% held-out accuracy) is shown as an unshipped counterfactual.
+- cfo.ai notes the held-out sample size as "not provided". It was 5 tasks, and the evaluation set 23.
+
+Planned and not started: the rest of the neatlogs dashboard check (task trace, filters), the Lambda deploy, and the demo.
 
 ## Demo
 
@@ -253,7 +261,7 @@ No demo URL. Nothing has been deployed or submitted.
 ## Known limitations and next steps
 
 - Model prices are the LiteLLM proxy's own rates. Lambda prices are unverified, and Crustdata data is priced at 0 because the hackathon credits were free.
-- cfo.ai is not connected, and there is no business plan yet. Entire covers only the build-notes commits, not the original build sessions.
+- The cfo.ai model rests on one 28-task run and on the builder's price and volume assumptions. Entire covers only the build-notes commits, not the original build sessions.
 - One defensive branch, a validation error with no field location, has no test.
 - 39 fixture companies, of which 8 fit the ICP. Always answering "not a fit" would score about 79%. The workload is 40 requests rather than the spec's 60.
 - A full enrich payload is about 230 KB per company. Sending it whole to a model would be expensive, so payload trimming matters in later stages.
