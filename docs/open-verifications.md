@@ -1,14 +1,15 @@
 # Open verifications
 
-Status as of 2026-10-12. Live model calls and the neatlogs dashboard are partly checked, as noted per item. Nothing has been checked against AWS.
+Status as of 2026-10-12. Live model calls and the neatlogs dashboard are partly checked, as noted per item. The Lambda runner was deployed and run once on AWS; Lambda prices are still unchecked.
 
 | Item | Kind | Status | Who closes it |
 | --- | --- | --- | --- |
 | Crustdata credits per enrich call | code marker | Open: docs say 2 credits; the dashboard charge is unchecked | builder |
 | LiteLLM accepts `max_tokens` and returns `usage` | code marker | Partly done: Sonnet returns `usage`; Haiku and the token cap are unchecked | the first optimize run |
 | neatlogs span attributes render as intended | manual | Names now taken from the neatlogs SDK's attribute map; the dashboard view after the rewrite is unchecked | builder |
-| Lambda Tail log ends with the REPORT line | code marker | Open: not deployed | builder, after `make lambda-deploy` |
-| Lambda deployment | manual | Not run; the zip builds locally | builder |
+| Lambda Tail log ends with the REPORT line | checked | Done 2026-10-12: parsed on 3 live invocations in ap-south-1 | — |
+| Lambda deployment | manual | Done 2026-10-12 in ap-south-1; 3-task smoke run passed; torn down after | — |
+| Lambda prices per GB-second and per request | config | Open: build spec values, unchecked for ap-south-1 or any region | builder |
 | neatlogs smoke check | manual | Partly done: traces arrive and nest; rerun after the attribute rewrite | builder |
 | Collector image and file output | config | Open: image not pinned, file write untested | builder |
 | Model names and per-token prices | config | Done 2026-10-12: `claude-haiku` and `claude-sonnet-4.6` at the proxy's rates | — |
@@ -42,17 +43,20 @@ Status as of 2026-10-12. Live model calls and the neatlogs dashboard are partly 
 - Change: spans now use those names. Each task is a `workflow` trace with a `tool` span for the company lookup, one `llm` span per model call, and an `evaluator` span for the label score. Each optimizer iteration is an `agent` trace with a `guardrail` span for the human approval, an `evaluator` span for the candidate run, and one `guardrail` span per check. All traces of a run share `neatlogs.session.id` = run id. `neatlogs.end_user.id` is the company domain being qualified, so the Users view lists companies, not people.
 - Still unchecked: that the dashboard shows the kinds, inputs and outputs, Passed/Blocked, sessions, users, and cost after this change. Check: run `scripts/smoke_neatlogs.py` or `scripts/replay_neatlogs.py --run-id demo`.
 
-## TODO(VERIFY: the Tail log of a text-format python3.12 function ends with this REPORT line)
+## Lambda REPORT line (checked 2026-10-12)
 
 - Where: `src/costwise/adapters/runners/report_line.py`, `_REPORT`.
-- Source so far: the build spec gives `REPORT RequestId: <id> Duration: 123.45 ms Billed Duration: 124 ms Memory Size: 512 MB Max Memory Used: 100 MB`, plus `Init Duration` on cold starts. The parser accepts tabs or spaces between fields and uses the last REPORT line in the tail. The deploy script leaves the function's log format at its default; a JSON log format would not produce this line.
-- Check: after `make lambda-deploy`, run `costwise eval baseline --run-id lambda-smoke --runner lambda --tasks 3` and confirm the results carry `billed_ms`, `memory_mb`, and a cold start on the first task.
+- Source: the build spec gives `REPORT RequestId: <id> Duration: 123.45 ms Billed Duration: 124 ms Memory Size: 512 MB Max Memory Used: 100 MB`, plus `Init Duration` on cold starts. The parser accepts tabs or spaces between fields and uses the last REPORT line in the tail. The deploy script leaves the function's log format at its default; a JSON log format would not produce this line.
+- Checked: run `lambda-smoke`, 3 invocations of the deployed function. All three results carry `infra_source: measured`, `memory_mb: 1024`, `billed_ms` of 4236, 4568 and 4666, and `cold_start: true`. All three were cold because the evaluator runs up to 4 tasks at once, so each invocation started a new container.
 
-## Lambda deployment (manual, not a code marker)
+## Lambda deployment (manual, done 2026-10-12)
 
-- Not yet run: `make lambda-deploy` needs AWS credentials for us-east-1, which the builder will set up before deploying.
-- The deploy creates one IAM role (`costwise-qualify-role`, basic execution policy only) and one function (`costwise-qualify`, python3.12, x86_64, 60 s timeout), both tagged `project=costwise`. `LITELLM_BASE_URL` and `LITELLM_API_KEY` are copied from `.env` into the function's environment variables; nothing else is.
-- `make lambda-build` was run locally on 2026-10-12: a 14.9 MB zip with Linux x86_64 wheels, the `costwise` package, `config/icp.yaml`, and 40 raw fixture files. No AWS call was made.
+- Deployed by the builder's instruction to the builder's own AWS account, region ap-south-1. Run with `AWS_REGION=ap-south-1`.
+- The deploy created one IAM role (`costwise-qualify-role`, basic execution policy only) and one function (`costwise-qualify`, python3.12, x86_64, 60 s timeout, 1024 MB), both tagged `project=costwise`. `LITELLM_BASE_URL` and `LITELLM_API_KEY` were copied from `.env` into the function's environment variables; nothing else was.
+- Zip: 14.9 MB with Linux x86_64 wheels, the `costwise` package, `config/icp.yaml`, and 40 raw fixture files.
+- Smoke run `costwise eval baseline --run-id lambda-smoke --runner lambda --tasks 3`: 3 of 3 completed, 3 successful, cost 0.351249 USD model, 0.000225 USD infrastructure (measured), 0 data.
+- The infrastructure figure uses `config/pricing.yaml`'s Lambda prices, which are build spec values and unchecked for ap-south-1.
+- Teardown: run the same evening with `AWS_REGION=ap-south-1`. It deleted the function, the policy attachment, and the role; a follow-up listing found no `costwise` function or role left.
 
 ## neatlogs smoke check (manual, not a code marker)
 

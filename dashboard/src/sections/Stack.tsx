@@ -86,9 +86,8 @@ export function Stack() {
           <Tile
             icon={Cloud}
             label="AWS Lambda"
-            title="Runner built, not deployed"
-            body="With the Lambda runner, infra cost is measured from billed duration. These runs used the local runner, so infra is modeled."
-            badge="pending"
+            title="Smoke-tested on AWS"
+            body="A 3-task run on the deployed function measured infra from billed duration; the function was torn down after. The runs shown here used the local runner, so their infra is modeled."
           />
         </Card>
       </motion.div>
